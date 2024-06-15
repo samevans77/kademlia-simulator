@@ -2,9 +2,12 @@ package peersim.kademlia.das.operations;
 
 import java.math.BigInteger;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Set;
 import peersim.kademlia.das.Block;
 import peersim.kademlia.das.KademliaCommonConfigDas;
 import peersim.kademlia.das.MissingNode;
@@ -103,12 +106,18 @@ public abstract class SamplingOperation extends FindOperation {
 
   protected abstract void createNodes();
 
-  public BigInteger[] doSampling() {
+  public BigInteger[] doSampling(SearchTable searchTable) {
 
     aggressiveness += KademliaCommonConfigDas.aggressiveness_step;
     for (Node n : nodes.values()) n.setAgressiveness(aggressiveness);
     List<BigInteger> result = new ArrayList<>();
-    for (Node n : nodes.values()) {
+
+    // SECURITY 1. ORDER NODES BY FEATURES
+    // SAMTODO: Make security features optional
+    List<Node> nodesByDiversity = orderByDiversity(nodes.values(), searchTable);
+
+    // for (Node n : nodes.values()) {
+    for (Node n : nodesByDiversity) {
       /*System.out.println(
           this.srcNode + "] Querying node " + n.getId() + " " + +n.getScore() + " " + this.getId());
       for (FetchingSample fs : n.getSamples())
@@ -126,6 +135,62 @@ public abstract class SamplingOperation extends FindOperation {
     }
 
     return result.toArray(new BigInteger[0]);
+  }
+
+  public List<Node> orderByDiversity(Collection<Node> nodeCollection, SearchTable searchTable) {
+    List<Node> nodes = new ArrayList<>(nodeCollection);
+    List<NodeDiversity> nodeDiversities = new ArrayList<>();
+
+    for (Node candidate : nodes) {
+      double candidateDiversity = calculateDiversity(candidate, nodes, searchTable);
+      nodeDiversities.add(new NodeDiversity(candidate, candidateDiversity));
+    }
+
+    // Sort nodes based on diversity score in descending order
+    nodeDiversities.sort((nd1, nd2) -> Double.compare(nd2.diversityScore, nd1.diversityScore));
+
+    // Extract and return the sorted list of nodes
+    List<Node> sortedNodes = new ArrayList<>();
+    for (NodeDiversity nd : nodeDiversities) {
+      sortedNodes.add(nd.node);
+    }
+    return sortedNodes;
+  }
+
+  private double calculateDiversity(Node candidate, List<Node> nodes, SearchTable searchTable) {
+    Set<BigInteger> candidateAncestors = searchTable.getParents(candidate.getId(), 3);
+    double diversityScore = 0;
+
+    for (Node node : nodes) {
+      // Don't compare the candidate to itself.
+      if (node == candidate) continue;
+      Set<BigInteger> nodeAncestors = searchTable.getParents(node.getId(), 3);
+      diversityScore += jaccardDistance(candidateAncestors, nodeAncestors);
+    }
+    return diversityScore / (nodes.size() - 1);
+    // Return the average of a candidate node's parental diversity against all other node's parents
+    // return diversityScore // Could just be like this instead if we wanted highest absolute score
+  }
+
+  private double jaccardDistance(Set<BigInteger> set1, Set<BigInteger> set2) {
+    Set<BigInteger> intersection = new HashSet<>(set1);
+    intersection.retainAll(set2);
+
+    Set<BigInteger> union = new HashSet<>(set1);
+    union.addAll(set2);
+
+    return 1.0
+        - ((double) intersection.size() / union.size()); // Jaccard coefficient complement (1 - Js)
+  }
+
+  private static class NodeDiversity {
+    Node node;
+    double diversityScore;
+
+    NodeDiversity(Node node, double diversityScore) {
+      this.node = node;
+      this.diversityScore = diversityScore;
+    }
   }
 
   public abstract void elaborateResponse(Sample[] sam, BigInteger node);

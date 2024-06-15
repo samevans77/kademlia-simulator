@@ -184,7 +184,10 @@ public class KademliaProtocol implements Cloneable, EDProtocol {
 
       // Save received neighbour in the closest Set of find operation
       BigInteger[] neighbours = (BigInteger[]) m.body;
-      if (callback != null) callback.nodesFound(fop, neighbours);
+      // if (callback != null) callback.nodesFound(fop, neighbours);
+      // SAM: TODO change this so that it's an option.
+      if (callback != null)
+        callback.nodesFoundWithParent(fop, neighbours, m.src.getId()); // Modified for getparent
       for (BigInteger neighbour : neighbours)
         if (Util.nodeIdtoNode(neighbour, myPid).getKademliaProtocol().getKademliaNode().isServer())
           routingTable.addNeighbour(neighbour);

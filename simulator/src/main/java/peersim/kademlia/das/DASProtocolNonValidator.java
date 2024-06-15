@@ -38,12 +38,17 @@ public class DASProtocolNonValidator extends DASProtocol {
             searchTable.getValidatorsIndexed().size());
     for (BigInteger sample : samples) {
       if (!reqSamples.contains(sample)) {
-        for (BigInteger id : searchTable.getValidatorNodesbySample(sample, radius)) {
+        for (BigInteger id :
+            searchTable.getValidatorNodesbySample(
+                sample, radius)) { // instead of each node, do just one after scanning.
           Message msg = generateGetSampleMessage(samples);
           msg.operationId = -1;
           msg.src = this.kadProtocol.getKademliaNode();
           Node n = Util.nodeIdtoNode(id, kademliaId);
-          msg.dst = n.getKademliaProtocol().getKademliaNode();
+          msg.dst =
+              n.getKademliaProtocol()
+                  .getKademliaNode(); // <--- I suspect this is the point at which I need to change
+          // the destination of the message.
           sendMessage(msg, id, myPid);
           reqSamples.add(sample);
         }

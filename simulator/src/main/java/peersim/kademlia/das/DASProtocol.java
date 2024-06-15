@@ -181,7 +181,7 @@ public abstract class DASProtocol implements Cloneable, EDProtocol, KademliaEven
           // remove form sentMsg
           logger.warning("Timeouuuuut! " + t.msgID);
           sentMsg.remove(t.msgID);
-          // this.searchTable.removeNode(t.node);
+          // this.searchTable.removeNode(t.node); 
           SamplingOperation sop = samplingOp.get(t.opID);
           if (sop != null) {
             if (!sop.completed()) {
@@ -203,6 +203,7 @@ public abstract class DASProtocol implements Cloneable, EDProtocol, KademliaEven
   public void setKademliaProtocol(KademliaProtocol prot) {
     this.kadProtocol = prot;
     this.logger = prot.getLogger();
+    searchTable.setKademliaProtocol(prot);
     /*searchTable = new SearchTable(currentBlock, this.getKademliaId());*/
   }
 
@@ -353,7 +354,8 @@ public abstract class DASProtocol implements Cloneable, EDProtocol, KademliaEven
 
     KademliaObserver.reportPeerDiscovery(m, searchTable);
     for (Neighbour neigh : (Neighbour[]) m.value) {
-      if (neigh.getId().compareTo(builderAddress) != 0) searchTable.addNeighbour(neigh);
+      if (neigh.getId().compareTo(builderAddress) != 0)
+        searchTable.addNeighbour(neigh, m.src.getId()); // modified to get parentID as well
     }
     for (Sample s : samples) {
 
@@ -402,7 +404,7 @@ public abstract class DASProtocol implements Cloneable, EDProtocol, KademliaEven
         samplingOp.remove(m.operationId);
         if (op instanceof ValidatorSamplingOperation)
           logger.warning("Sampling operation finished validator completed " + op.getId());
-        else logger.warning("Sampling operation finished random completed " + op.getId());
+        else logger.warning("Sampling operation finished random completed " + op.getId()); // Does this mean that it failed??? <SAM>
         KademliaObserver.reportOperation(op);
       }
     }
@@ -512,7 +514,7 @@ public abstract class DASProtocol implements Cloneable, EDProtocol, KademliaEven
       boolean success = false;
       if (sop.getAvailableRequests() == 0) {
         logger.warning("Doing sampling again " + sop.getId());
-        BigInteger[] nextNodes = sop.doSampling();
+        BigInteger[] nextNodes = sop.doSampling(searchTable);
         for (BigInteger nextNode : nextNodes) {
           BigInteger[] reqSamples = sop.getSamples();
           logger.warning(
@@ -530,7 +532,11 @@ public abstract class DASProtocol implements Cloneable, EDProtocol, KademliaEven
           msg.src = this.kadProtocol.getKademliaNode();
           if (missing) msg.value = reqSamples;
           success = true;
-          msg.dst = Util.nodeIdtoNode(nextNode, kademliaId).getKademliaProtocol().getKademliaNode();
+
+          msg.dst =
+              Util.nodeIdtoNode(nextNode, kademliaId)
+                  .getKademliaProtocol()
+                  .getKademliaNode(); // <-- Change here for selection of right node?
 
           sop.addMessage(msg.id);
           sendMessage(msg, nextNode, dasID);
@@ -573,7 +579,8 @@ public abstract class DASProtocol implements Cloneable, EDProtocol, KademliaEven
       list.remove(builderAddress);
       for (BigInteger id : list) {
         Node n = Util.nodeIdtoNode(id, kademliaId);
-        searchTable.addNeighbour(new Neighbour(id, n, n.getDASProtocol().isEvil()));
+        searchTable.addNeighbour(
+            new Neighbour(id, n, n.getDASProtocol().isEvil()), null); // Not sure if this is right
       }
       logger.warning(
           "Search table operation complete"
@@ -611,7 +618,32 @@ public abstract class DASProtocol implements Cloneable, EDProtocol, KademliaEven
     }
     for (BigInteger id : list) {
       Node n = Util.nodeIdtoNode(id, kademliaId);
-      searchTable.addNeighbour(new Neighbour(id, n, n.getDASProtocol().isEvil()));
+      searchTable.addNeighbour(
+          new Neighbour(id, n, n.getDASProtocol().isEvil()), null); // modified for dst node
+    }
+    logger.info(
+        "Search table nodes found " + searchTable.nodesIndexed().size() + " " + neighbours.length);
+
+    if (kadOps.get(op) != null) {
+      if (!kadOps.get(op).completed()) {
+        logger.info("Sampling operation found");
+        doSampling(kadOps.get(op));
+      }
+    }
+  }
+
+  @Override
+  public void nodesFoundWithParent(Operation op, BigInteger[] neighbours, BigInteger parentID) {
+    List<BigInteger> list = new ArrayList<>(Arrays.asList(neighbours));
+    list.remove(builderAddress);
+    if (neighbours.length == 0) {
+      logger.warning("No neighbours found");
+      return;
+    }
+    for (BigInteger id : list) {
+      Node n = Util.nodeIdtoNode(id, kademliaId);
+      searchTable.addNeighbour(
+          new Neighbour(id, n, n.getDASProtocol().isEvil()), parentID); // modified for dst node
     }
     logger.info(
         "Search table nodes found " + searchTable.nodesIndexed().size() + " " + neighbours.length);

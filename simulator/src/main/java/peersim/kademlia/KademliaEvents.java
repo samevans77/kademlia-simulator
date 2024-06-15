@@ -25,4 +25,14 @@ public interface KademliaEvents {
   public void operationComplete(Operation op);
 
   public void putValueReceived(Object o);
+
+  /**
+   * Callback method triggered when the operation finds neighbouring nodes. Modified to include
+   * parental relationship
+   *
+   * @param fop the operation that triggered the event
+   * @param neighbours an array of BigIntegers representing the neighbouring nodes
+   * @param id the ID of the parent who provided the array of neighbouring nodes
+   */
+  public void nodesFoundWithParent(Operation op, BigInteger[] neighbours, BigInteger parentID);
 }
