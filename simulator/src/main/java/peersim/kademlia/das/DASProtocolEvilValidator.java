@@ -1,12 +1,13 @@
 package peersim.kademlia.das;
 
+import peersim.config.Configuration;
 import peersim.core.CommonState;
 import peersim.kademlia.Message;
 
 public class DASProtocolEvilValidator extends DASProtocolValidator {
 
   protected static String prefix = null;
-  // TODO Read the attackTime from the config - for now set it to the end of the experiment
+  protected static final String PAR_ATTACKTIME = "attackTime";
   long attackTime = CommonState.getEndTime();
 
   public DASProtocolEvilValidator(String prefix) {
@@ -16,6 +17,8 @@ public class DASProtocolEvilValidator extends DASProtocolValidator {
     searchTable.setOnlyAddEvilNghbrs();
     isValidator = true;
     isBuilder = false;
+    attackTime =
+        Configuration.getLong(prefix + "." + PAR_ATTACKTIME, KademliaCommonConfigDas.ATTACK_TIME);
   }
 
   @Override

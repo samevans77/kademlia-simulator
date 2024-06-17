@@ -35,6 +35,14 @@ public abstract class SamplingOperation extends FindOperation {
 
   protected List<BigInteger> askNodes;
 
+  protected boolean securityActive;
+
+  protected static String prefix = null;
+  protected static final String PAR_SECURITY_ACTIVE = "securityActive";
+
+  protected static final double DIVERSITY_WEIGHT = 0.5;
+  protected static final double RATING_WEIGHT = 0.5;
+
   public SamplingOperation(
       BigInteger srcNode,
       BigInteger destNode,
@@ -55,6 +63,9 @@ public abstract class SamplingOperation extends FindOperation {
     aggressiveness = 0;
     askNodes = new ArrayList<>();
     timesIncreased = 0;
+    securityActive = KademliaCommonConfigDas.SECURITY_ACTIVE;
+    // securityActive = Configuration.getBoolean(prefix + "." + PAR_SECURITY_ACTIVE,
+    // KademliaCommonConfigDas.SECURITY_ACTIVE);
   }
 
   public SamplingOperation(
@@ -81,6 +92,9 @@ public abstract class SamplingOperation extends FindOperation {
         currentBlock.computeRegionRadius(KademliaCommonConfigDas.NUM_SAMPLE_COPIES_PER_PEER);
     askNodes = new ArrayList<>();
     timesIncreased = 0;
+    securityActive = KademliaCommonConfigDas.SECURITY_ACTIVE;
+    // securityActive = Configuration.getBoolean(prefix + "." + PAR_SECURITY_ACTIVE,
+    // KademliaCommonConfigDas.SECURITY_ACTIVE);
     // queried = new HashSet<>();
     // TODO Auto-generated constructor stub
   }
@@ -113,18 +127,19 @@ public abstract class SamplingOperation extends FindOperation {
     for (Node n : nodes.values()) n.setAgressiveness(aggressiveness);
     List<BigInteger> result = new ArrayList<>();
 
-    // SECURITY 1. ORDER NODES BY FEATURES
-    // SAMTODO: Make security features optional
-    double DIVERSITY_WEIGHT = 0.5;
-    double RATING_WEIGHT = 0.5;
+    List<Node> nodeList = new ArrayList<>();
 
-    List<Node> nodesByDiversity = orderByDiversity(nodes.values(), searchTable);
-    List<Node> nodesByRating = orderByRating(nodes.values(), searchTable);
-    List<Node> combinedList =
-        combineLists(nodesByDiversity, nodesByRating, DIVERSITY_WEIGHT, RATING_WEIGHT);
+    if (securityActive) {
+      // SECURITY: ORDER NODES BY DIVERSITY, AND RATING - THEN COMBINE
+      List<Node> nodesByDiversity = orderByDiversity(nodes.values(), searchTable);
+      List<Node> nodesByRating = orderByRating(nodes.values(), searchTable);
+      nodeList = combineLists(nodesByDiversity, nodesByRating, DIVERSITY_WEIGHT, RATING_WEIGHT);
+    } else {
+      nodeList = new ArrayList<>(nodes.values());
+    }
 
     // for (Node n : nodes.values()) {
-    for (Node n : combinedList) {
+    for (Node n : nodeList) {
       /*System.out.println(
           this.srcNode + "] Querying node " + n.getId() + " " + +n.getScore() + " " + this.getId());
       for (FetchingSample fs : n.getSamples())

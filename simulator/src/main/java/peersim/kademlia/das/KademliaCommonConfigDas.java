@@ -65,4 +65,8 @@ public class KademliaCommonConfigDas {
   public static int networkSize = 0;
 
   public static long TTL = 100000;
+
+  public static long ATTACK_TIME = 1;
+
+  public static boolean SECURITY_ACTIVE = true;
 }

@@ -60,6 +60,9 @@ public class KademliaObserver implements Control {
   private static HashMap<Long, Map<String, Object>> peerDiscoveries =
       new HashMap<Long, Map<String, Object>>();
 
+  private static HashMap<Long, Map<String, Object>> maliciousNodes =
+      new HashMap<Long, Map<String, Object>>();
+
   /** Name of the folder where experiment logs are written */
   private static String logFolderName;
 
@@ -117,6 +120,9 @@ public class KademliaObserver implements Control {
 
   /** Writes log data to files. */
   public static void writeOut() {
+
+    // First collect the malicious nodes:
+    // reportMaliciousNodes(SearchTable);
     // System.out.println("Writing out");
 
     File directory = new File(logFolderName);
@@ -132,6 +138,9 @@ public class KademliaObserver implements Control {
     }
     if (!peerDiscoveries.isEmpty()) {
       writeLogs(peerDiscoveries, logFolderName + "/" + "peerDiscoveries.csv");
+    }
+    if (!maliciousNodes.isEmpty()) {
+      writeLogs(maliciousNodes, logFolderName + "/" + "listMalicious.csv");
     }
   }
 
@@ -225,5 +234,14 @@ public class KademliaObserver implements Control {
     result.put("peers_not_known", notKnown);
     result.put("validators_discovered", st.getValidatorsNeighboursCount());
     peerDiscoveries.put(m.id, result);
+  }
+
+  public static void reportMaliciousNodes(SearchTable st) {
+    for (Neighbour n : st.getNeighbours()) {
+      Map<String, Object> result = new HashMap<String, Object>();
+      result.put("node_id", n.getId());
+      result.put("is_malicious", st.isEvil(n.getId()));
+      maliciousNodes.put(Long.valueOf(1), result);
+    }
   }
 }
