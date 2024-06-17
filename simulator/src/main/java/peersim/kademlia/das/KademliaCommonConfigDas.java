@@ -69,4 +69,13 @@ public class KademliaCommonConfigDas {
   public static long ATTACK_TIME = 1;
 
   public static boolean SECURITY_ACTIVE = true;
+
+  public static double DIVERSITY_WEIGHT = 0.5;
+  public static double RATING_WEIGHT = 0.5;
+
+  public static int MAX_PARENT_DEPTH = 3;
+
+  public static int RATED_SUCCESSFUL_SAMPLE_CHANGE = 1;
+  public static int RATED_FAILED_SAMPLE_CHANGE = -1;
+  public static int INITIAL_RATING = 0;
 }

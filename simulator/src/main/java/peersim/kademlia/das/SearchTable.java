@@ -24,7 +24,9 @@ public class SearchTable {
 
   // private HashMap<BigInteger, Integer> ratedList;
   private HashMap<BigInteger, RatedNode> ratedList;
-  private static Integer maxParentDepth = 3;
+  private static Integer maxParentDepth = KademliaCommonConfigDas.MAX_PARENT_DEPTH;
+
+  private static Integer initialRating = KademliaCommonConfigDas.INITIAL_RATING;
 
   // Used to identify the "parent" of any individual "child" added to the searchtable
   private HashMap<BigInteger, List<BigInteger>> parents;
@@ -67,7 +69,7 @@ public class SearchTable {
     }
 
     addParent(neigh.getId(), parentID);
-    ratedList.putIfAbsent(neigh.getId(), new RatedNode(neigh.getId(), 0));
+    ratedList.putIfAbsent(neigh.getId(), new RatedNode(neigh.getId(), initialRating));
     // logger.warning("Adding parent to " + neigh.getId() + " parentID: " + parentID);
 
     if (neigh.getId().compareTo(builderAddress) != 0) {
@@ -92,7 +94,7 @@ public class SearchTable {
         if (!blackList.contains(id)
             && !validatorsIndexed.contains(id)
             && !builderAddress.equals(id)) {
-          ratedList.putIfAbsent(id, new RatedNode(id, 0));
+          ratedList.putIfAbsent(id, new RatedNode(id, initialRating));
           nonValidatorsIndexed.add(id);
         }
       }
@@ -114,7 +116,7 @@ public class SearchTable {
     for (BigInteger id : nodes) {
       if (!blackList.contains(id) && id.compareTo(builderAddress) != 0) {
         validatorsIndexed.add(id);
-        ratedList.putIfAbsent(id, new RatedNode(id, 0));
+        ratedList.putIfAbsent(id, new RatedNode(id, initialRating));
       }
     }
   }
@@ -303,7 +305,7 @@ public class SearchTable {
     parents.put(childID, currentParents);
 
     // Puts the parent in the ratedlist only if it doesn't already exist there
-    ratedList.putIfAbsent(parentID, new RatedNode(parentID, 0));
+    ratedList.putIfAbsent(parentID, new RatedNode(parentID, initialRating));
   }
 
   /**
@@ -370,7 +372,7 @@ public class SearchTable {
   public void successfulSample(BigInteger successfulNode) {
 
     if (!ratedList.containsKey(successfulNode))
-      ratedList.put(successfulNode, new RatedNode(successfulNode, 0));
+      ratedList.put(successfulNode, new RatedNode(successfulNode, initialRating));
     ratedList.get(successfulNode).successfulSample();
 
     Set<BigInteger> parents = getParents(successfulNode, maxParentDepth);
@@ -382,7 +384,7 @@ public class SearchTable {
   // Potentially bad algorithm, returns a rated node no matter what - creating a new one if one of
   // the same ID doesn't already exist.
   public RatedNode getRatedNode(BigInteger nodeID) {
-    if (!ratedList.containsKey(nodeID)) ratedList.put(nodeID, new RatedNode(nodeID, 0));
+    if (!ratedList.containsKey(nodeID)) ratedList.put(nodeID, new RatedNode(nodeID, initialRating));
     return ratedList.get(nodeID);
   }
 

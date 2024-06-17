@@ -40,8 +40,8 @@ public abstract class SamplingOperation extends FindOperation {
   protected static String prefix = null;
   protected static final String PAR_SECURITY_ACTIVE = "securityActive";
 
-  protected static final double DIVERSITY_WEIGHT = 0.5;
-  protected static final double RATING_WEIGHT = 0.5;
+  protected static final double DIVERSITY_WEIGHT = KademliaCommonConfigDas.DIVERSITY_WEIGHT;
+  protected static final double RATING_WEIGHT = KademliaCommonConfigDas.RATING_WEIGHT;
 
   public SamplingOperation(
       BigInteger srcNode,
@@ -251,17 +251,16 @@ public abstract class SamplingOperation extends FindOperation {
     HashMap<Node, Integer> diversityRankMap = new HashMap<>();
     HashMap<Node, Integer> ratingRankMap = new HashMap<>();
 
-    // Assign ranks based on position in the diversity list
+    // Assign ranks based on position in the diversity list (starting at 1)
     for (int i = 0; i < nodesByDiversity.size(); i++) {
-      diversityRankMap.put(nodesByDiversity.get(i), i + 1); // rank starts from 1
+      diversityRankMap.put(nodesByDiversity.get(i), i + 1);
     }
 
-    // Assign ranks based on position in the rating list
     for (int i = 0; i < nodesByRating.size(); i++) {
-      ratingRankMap.put(nodesByRating.get(i), i + 1); // rank starts from 1
+      ratingRankMap.put(nodesByRating.get(i), i + 1);
     }
 
-    // Calculate combined score
+    // Combined score
     HashMap<Node, Double> combinedScoreMap = new HashMap<>();
     for (Node node : nodesByDiversity) {
       int diversityRank = diversityRankMap.get(node);

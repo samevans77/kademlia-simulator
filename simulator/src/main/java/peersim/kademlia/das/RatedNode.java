@@ -5,8 +5,9 @@ import java.math.BigInteger;
 // RatedNode class is used by the SearchTable to determine appropriate nodes for searches.
 public class RatedNode {
 
-  private static Integer successfulSampleChange = 1;
-  private static Integer failedSampleChange = -1;
+  private static Integer successfulSampleChange =
+      KademliaCommonConfigDas.RATED_SUCCESSFUL_SAMPLE_CHANGE;
+  private static Integer failedSampleChange = KademliaCommonConfigDas.RATED_FAILED_SAMPLE_CHANGE;
 
   private BigInteger nodeID;
   private NodeStatus activity;
