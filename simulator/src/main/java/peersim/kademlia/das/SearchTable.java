@@ -22,6 +22,10 @@ public class SearchTable {
   // Used to send known nodes to other peers
   private HashMap<BigInteger, Neighbour> neighbours;
 
+  // private HashMap<BigInteger, Integer> ratedList;
+  private HashMap<BigInteger, RatedNode> ratedList;
+  private static Integer maxParentDepth = 3;
+
   // Used to identify the "parent" of any individual "child" added to the searchtable
   private HashMap<BigInteger, List<BigInteger>> parents;
 
@@ -44,6 +48,7 @@ public class SearchTable {
     this.blackList = new HashSet<>();
     this.neighbours = new HashMap<>();
     this.parents = new HashMap<>();
+    this.ratedList = new HashMap<>();
   }
 
   /**
@@ -62,6 +67,7 @@ public class SearchTable {
     }
 
     addParent(neigh.getId(), parentID);
+    ratedList.putIfAbsent(neigh.getId(), new RatedNode(neigh.getId(), 0));
     // logger.warning("Adding parent to " + neigh.getId() + " parentID: " + parentID);
 
     if (neigh.getId().compareTo(builderAddress) != 0) {
@@ -86,6 +92,7 @@ public class SearchTable {
         if (!blackList.contains(id)
             && !validatorsIndexed.contains(id)
             && !builderAddress.equals(id)) {
+          ratedList.putIfAbsent(id, new RatedNode(id, 0));
           nonValidatorsIndexed.add(id);
         }
       }
@@ -107,6 +114,7 @@ public class SearchTable {
     for (BigInteger id : nodes) {
       if (!blackList.contains(id) && id.compareTo(builderAddress) != 0) {
         validatorsIndexed.add(id);
+        ratedList.putIfAbsent(id, new RatedNode(id, 0));
       }
     }
   }
@@ -293,6 +301,9 @@ public class SearchTable {
     List<BigInteger> currentParents = parents.getOrDefault(childID, new ArrayList<>());
     currentParents.add(parentID);
     parents.put(childID, currentParents);
+
+    // Puts the parent in the ratedlist only if it doesn't already exist there
+    ratedList.putIfAbsent(parentID, new RatedNode(parentID, 0));
   }
 
   /**
@@ -336,13 +347,63 @@ public class SearchTable {
     }
   }
 
-  private static class RatedNode {
-    BigInteger nodeID;
-    BigInteger rating;
+  /**
+   * Called when the node passed in argument fails to respond to a sample request
+   *
+   * @param failedNode The node ID of the node which failed to respond
+   */
+  public void failedSample(BigInteger failedNode) {
+    Set<BigInteger> parents = getParents(failedNode, maxParentDepth);
+    // removeNode(failedNode); <-- not sure if this is necessary
+    ratedList.get(failedNode).failedSample();
+    for (BigInteger parent : parents) {
+      ratedList.get(parent).failedSample();
+    }
+  }
 
-    RatedNode(BigInteger nodeID, BigInteger rating) {
-      this.nodeID = nodeID;
-      this.rating = rating;
+  /**
+   * Simply increase the ratedList score for each parent of the node who successfully returned a
+   * sample
+   *
+   * @param successfulNode The node ID of the responding node
+   */
+  public void successfulSample(BigInteger successfulNode) {
+
+    if (!ratedList.containsKey(successfulNode))
+      ratedList.put(successfulNode, new RatedNode(successfulNode, 0));
+    ratedList.get(successfulNode).successfulSample();
+
+    Set<BigInteger> parents = getParents(successfulNode, maxParentDepth);
+    for (BigInteger parent : parents) {
+      ratedList.get(parent).successfulSample();
+    }
+  }
+
+  // Potentially bad algorithm, returns a rated node no matter what - creating a new one if one of
+  // the same ID doesn't already exist.
+  public RatedNode getRatedNode(BigInteger nodeID) {
+    if (!ratedList.containsKey(nodeID)) ratedList.put(nodeID, new RatedNode(nodeID, 0));
+    return ratedList.get(nodeID);
+  }
+
+  public void checkNodesToPurge() {
+    // First get all neighbours
+    Neighbour[] neighbourlist = getNeighbours();
+    for (Neighbour n : neighbourlist) {
+
+      // Then for each neighbour, look at their parents
+      Set<BigInteger> parents = getParents(n.getId(), maxParentDepth);
+      Boolean remove = true;
+
+      // For each parent, check if any are not defunct, if they are then don't remove the node
+      // This also removes the node if it has no parents
+      for (BigInteger parent : parents) {
+        if (!getRatedNode(parent).isDefunct()) remove = false;
+      }
+
+      if (remove) {
+        removeNode(n.getId());
+      }
     }
   }
 }

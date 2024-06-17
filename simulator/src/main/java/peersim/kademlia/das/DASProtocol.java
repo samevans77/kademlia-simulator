@@ -172,6 +172,7 @@ public abstract class DASProtocol implements Cloneable, EDProtocol, KademliaEven
         m = (Message) event;
         // logger.warning("Send message removed " + m.ackId);
         sentMsg.remove(m.ackId);
+        this.searchTable.successfulSample(m.src.getId());
         handleGetSampleResponse(m, myPid);
         break;
 
@@ -181,7 +182,7 @@ public abstract class DASProtocol implements Cloneable, EDProtocol, KademliaEven
           // remove form sentMsg
           logger.warning("Timeouuuuut! " + t.msgID);
           sentMsg.remove(t.msgID);
-          // this.searchTable.removeNode(t.node); 
+          this.searchTable.failedSample(t.node);
           SamplingOperation sop = samplingOp.get(t.opID);
           if (sop != null) {
             if (!sop.completed()) {
@@ -404,7 +405,10 @@ public abstract class DASProtocol implements Cloneable, EDProtocol, KademliaEven
         samplingOp.remove(m.operationId);
         if (op instanceof ValidatorSamplingOperation)
           logger.warning("Sampling operation finished validator completed " + op.getId());
-        else logger.warning("Sampling operation finished random completed " + op.getId()); // Does this mean that it failed??? <SAM>
+        else
+          logger.warning(
+              "Sampling operation finished random completed "
+                  + op.getId()); // Does this mean that it failed??? <SAM>
         KademliaObserver.reportOperation(op);
       }
     }
