@@ -360,6 +360,7 @@ public class SearchTable {
     for (BigInteger parent : parents) {
       ratedList.get(parent).failedSample();
     }
+    checkNodesToPurge();
   }
 
   /**
@@ -403,7 +404,7 @@ public class SearchTable {
       }
 
       if (remove) {
-        // getRatedNode(n). // Set as defunct
+        getRatedNode(n.getId()).setDefunct();
         removeNode(n.getId());
       }
     }

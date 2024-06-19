@@ -67,4 +67,9 @@ public class RatedNode {
   public Double getRating() {
     return ratedScore;
   }
+
+  public void setDefunct() {
+    ratedScore = 0.0;
+    activity = NodeStatus.DEFUNCT;
+  }
 }
