@@ -196,7 +196,10 @@ public abstract class SamplingOperation extends FindOperation {
     union.addAll(set2);
 
     return 1.0
-        - ((double) intersection.size() / union.size()); // Jaccard coefficient complement (1 - Js)
+        - ((double) intersection.size()
+            / union
+                .size()); // Jaccard coefficient complement (1 - Js) (we want the dissimilarity of
+    // the two sets, not the similarity)
   }
 
   private static class NodeDiversity {

@@ -355,12 +355,15 @@ public class SearchTable {
    * @param failedNode The node ID of the node which failed to respond
    */
   public void failedSample(BigInteger failedNode) {
+    if (!ratedList.containsKey(failedNode))
+      ratedList.put(failedNode, new RatedNode(failedNode, initialRating));
+
     Set<BigInteger> parents = getParents(failedNode, maxParentDepth);
     ratedList.get(failedNode).failedSample();
     for (BigInteger parent : parents) {
       ratedList.get(parent).failedSample();
     }
-    checkNodesToPurge();
+    // checkNodesToPurge();
   }
 
   /**

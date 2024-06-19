@@ -19,7 +19,7 @@ public class KademliaCommonConfigDas {
   public static int MAPPING_FN = SAMPLE_MAPPING_REGION_BASED;
 
   /** Number of copies of each sample stored in the network */
-  public static int NUM_SAMPLE_COPIES_PER_PEER = 2;
+  public static int NUM_SAMPLE_COPIES_PER_PEER = 3;
 
   /** Block matrix dimension */
   public static int BLOCK_DIM_SIZE = 10;
@@ -66,9 +66,9 @@ public class KademliaCommonConfigDas {
 
   public static long TTL = 100000;
 
-  public static long ATTACK_TIME = 1;
+  public static long ATTACK_TIME = 2000;
 
-  public static boolean SECURITY_ACTIVE = true;
+  public static boolean SECURITY_ACTIVE = false;
 
   public static double DIVERSITY_WEIGHT = 0.5;
   public static double RATING_WEIGHT = 0.5;

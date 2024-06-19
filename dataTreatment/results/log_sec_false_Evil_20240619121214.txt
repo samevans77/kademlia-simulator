@@ -1,9 +1,0 @@
-Number of entries with type 'ValidatorSamplingOperation': 255 
-
-Number of 'completed' values that are 'yes': 195
-Number of 'completed' values that are 'no': 60
-
-Percentage of 'completed' values that are 'yes': 76.47%
-Percentage of 'completed' values that are 'no': 23.53%
-
-Average 'completion_time' for 'ValidatorSamplingOperation': 2570.38

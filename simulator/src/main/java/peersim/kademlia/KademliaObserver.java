@@ -72,6 +72,8 @@ public class KademliaObserver implements Control {
   /** The time granularity of reporting metrics */
   private static int observerStep;
 
+  private static int count = 0;
+
   /**
    * Constructor to initialize the observer.
    *
@@ -244,10 +246,11 @@ public class KademliaObserver implements Control {
 
   public static void reportMaliciousNodes() {
     for (BigInteger node : maliciousSet) {
+      count += 1;
       Map<String, Object> result = new HashMap<String, Object>();
       result.put("node_id", node);
       result.put("is_malicious", true);
-      maliciousNodes.put(Long.valueOf(1), result);
+      maliciousNodes.put(Long.valueOf(count), result);
     }
   }
 }

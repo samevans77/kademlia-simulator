@@ -30,8 +30,8 @@ if __name__ == "__main__":
     filtered_df = df[df['type'] == 'ValidatorSamplingOperation']
 
     completed_counts = filtered_df['completed'].value_counts()
-    completed_yes = completed_counts.get('yes', 0)
-    completed_no = completed_counts.get('no', 0)
+    completed_yes = completed_counts.get('yes', 0) # Defaults to zero
+    completed_no = completed_counts.get('no', 0) # Defaults to zero
     total_completions = completed_yes + completed_no
     average_completion_time = filtered_df['completion_time'].mean()
     percentage_yes = (completed_yes / total_completions) * 100 if total_completions > 0 else 0
