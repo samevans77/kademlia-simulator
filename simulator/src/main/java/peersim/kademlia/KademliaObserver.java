@@ -3,6 +3,7 @@ package peersim.kademlia;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.math.BigInteger;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
@@ -63,6 +64,8 @@ public class KademliaObserver implements Control {
   private static HashMap<Long, Map<String, Object>> maliciousNodes =
       new HashMap<Long, Map<String, Object>>();
 
+  private static Set<BigInteger> maliciousSet = new HashSet<BigInteger>();
+
   /** Name of the folder where experiment logs are written */
   private static String logFolderName;
 
@@ -122,7 +125,7 @@ public class KademliaObserver implements Control {
   public static void writeOut() {
 
     // First collect the malicious nodes:
-    // reportMaliciousNodes(SearchTable);
+    reportMaliciousNodes();
     // System.out.println("Writing out");
 
     File directory = new File(logFolderName);
@@ -223,7 +226,10 @@ public class KademliaObserver implements Control {
     int notKnown = 0;
     for (Neighbour n : neighs) {
       if (!st.isNeighbourKnown(n)) notKnown++;
+      if (n.isEvil()) maliciousSet.add(n.getId());
     }
+    // for (Neighbour n : st.getNeighbours()) {} // Necessary because neighs as above is relating to
+    // peer discovery
     result.put("time", CommonState.getTime());
     result.put("message_id", m.id);
     result.put("dst_id", m.dst.getId());
@@ -236,11 +242,11 @@ public class KademliaObserver implements Control {
     peerDiscoveries.put(m.id, result);
   }
 
-  public static void reportMaliciousNodes(SearchTable st) {
-    for (Neighbour n : st.getNeighbours()) {
+  public static void reportMaliciousNodes() {
+    for (BigInteger node : maliciousSet) {
       Map<String, Object> result = new HashMap<String, Object>();
-      result.put("node_id", n.getId());
-      result.put("is_malicious", st.isEvil(n.getId()));
+      result.put("node_id", node);
+      result.put("is_malicious", true);
       maliciousNodes.put(Long.valueOf(1), result);
     }
   }

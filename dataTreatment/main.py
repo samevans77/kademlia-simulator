@@ -1,7 +1,8 @@
-from os import listdir, getcwd
-from os.path import isfile, join, isdir, join
+from os import listdir, getcwd, makedirs
+from os.path import isfile, join, isdir, join, basename
 import sys
 import pandas as pd
+from datetime import datetime
 
 def get_parent_dir(directory):
     import os
@@ -36,12 +37,20 @@ if __name__ == "__main__":
     percentage_yes = (completed_yes / total_completions) * 100 if total_completions > 0 else 0
     percentage_no = (completed_no / total_completions) * 100 if total_completions > 0 else 0
 
-    print(f"Number of entries with type 'ValidatorSamplingOperation': {len(filtered_df)} \n")
+    results_dir = join(getcwd(), 'results')
+    if not isdir(results_dir):
+        makedirs(results_dir)
 
-    print(f"Number of 'completed' values that are 'yes': {completed_yes}")
-    print(f"Number of 'completed' values that are 'no': {completed_no} \n")
+    timestamp = datetime.now().strftime('%Y%m%d%H%M%S')
+    target_name = basename(target_dir)
+    output_file = join(results_dir, f"{target_name}_{timestamp}.txt")
 
-    print(f"Percentage of 'completed' values that are 'yes': {percentage_yes:.2f}%")
-    print(f"Percentage of 'completed' values that are 'no': {percentage_no:.2f}% \n")
+    with open(output_file, 'w') as f:
+        f.write(f"Number of entries with type 'ValidatorSamplingOperation': {len(filtered_df)} \n\n")
+        f.write(f"Number of 'completed' values that are 'yes': {completed_yes}\n")
+        f.write(f"Number of 'completed' values that are 'no': {completed_no}\n\n")
+        f.write(f"Percentage of 'completed' values that are 'yes': {percentage_yes:.2f}%\n")
+        f.write(f"Percentage of 'completed' values that are 'no': {percentage_no:.2f}%\n\n")
+        f.write(f"Average 'completion_time' for 'ValidatorSamplingOperation': {average_completion_time:.2f}")
 
-    print(f"Average 'completion_time' for 'ValidatorSamplingOperation': {average_completion_time:.2f}")
+    print(f"Results written to {output_file}")

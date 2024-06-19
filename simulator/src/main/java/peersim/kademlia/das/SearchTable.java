@@ -26,7 +26,7 @@ public class SearchTable {
   private HashMap<BigInteger, RatedNode> ratedList;
   private static Integer maxParentDepth = KademliaCommonConfigDas.MAX_PARENT_DEPTH;
 
-  private static Integer initialRating = KademliaCommonConfigDas.INITIAL_RATING;
+  private static Double initialRating = KademliaCommonConfigDas.INITIAL_RATING;
 
   // Used to identify the "parent" of any individual "child" added to the searchtable
   private HashMap<BigInteger, List<BigInteger>> parents;
@@ -356,7 +356,6 @@ public class SearchTable {
    */
   public void failedSample(BigInteger failedNode) {
     Set<BigInteger> parents = getParents(failedNode, maxParentDepth);
-    // removeNode(failedNode); <-- not sure if this is necessary
     ratedList.get(failedNode).failedSample();
     for (BigInteger parent : parents) {
       ratedList.get(parent).failedSample();
@@ -404,6 +403,7 @@ public class SearchTable {
       }
 
       if (remove) {
+        // getRatedNode(n). // Set as defunct
         removeNode(n.getId());
       }
     }

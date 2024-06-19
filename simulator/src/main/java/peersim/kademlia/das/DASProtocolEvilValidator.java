@@ -23,6 +23,7 @@ public class DASProtocolEvilValidator extends DASProtocolValidator {
 
   @Override
   protected void handleInitGetSample(Message m, int myPid) {
+    logger.warning("Attack Time is:" + attackTime);
     logger.warning("Init block evil node validator - getting samples " + this);
     // super.handleInitGetSample(m, myPid);
   }

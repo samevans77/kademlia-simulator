@@ -3,11 +3,11 @@ package peersim.kademlia.das.operations;
 import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import peersim.kademlia.das.Block;
 import peersim.kademlia.das.KademliaCommonConfigDas;
@@ -42,6 +42,8 @@ public abstract class SamplingOperation extends FindOperation {
 
   protected static final double DIVERSITY_WEIGHT = KademliaCommonConfigDas.DIVERSITY_WEIGHT;
   protected static final double RATING_WEIGHT = KademliaCommonConfigDas.RATING_WEIGHT;
+
+  protected static final double MAX_RATING = KademliaCommonConfigDas.MAX_RATING;
 
   public SamplingOperation(
       BigInteger srcNode,
@@ -131,8 +133,8 @@ public abstract class SamplingOperation extends FindOperation {
 
     if (securityActive) {
       // SECURITY: ORDER NODES BY DIVERSITY, AND RATING - THEN COMBINE
-      List<Node> nodesByDiversity = orderByDiversity(nodes.values(), searchTable);
-      List<Node> nodesByRating = orderByRating(nodes.values(), searchTable);
+      List<NodeDiversity> nodesByDiversity = orderByDiversity(nodes.values(), searchTable);
+      List<NodeRating> nodesByRating = orderByRating(nodes.values(), searchTable);
       nodeList = combineLists(nodesByDiversity, nodesByRating, DIVERSITY_WEIGHT, RATING_WEIGHT);
     } else {
       nodeList = new ArrayList<>(nodes.values());
@@ -159,7 +161,8 @@ public abstract class SamplingOperation extends FindOperation {
     return result.toArray(new BigInteger[0]);
   }
 
-  public List<Node> orderByDiversity(Collection<Node> nodeCollection, SearchTable searchTable) {
+  public List<NodeDiversity> orderByDiversity(
+      Collection<Node> nodeCollection, SearchTable searchTable) {
     List<Node> nodes = new ArrayList<>(nodeCollection);
     List<NodeDiversity> nodeDiversities = new ArrayList<>();
 
@@ -167,16 +170,7 @@ public abstract class SamplingOperation extends FindOperation {
       double candidateDiversity = calculateDiversity(candidate, nodes, searchTable);
       nodeDiversities.add(new NodeDiversity(candidate, candidateDiversity));
     }
-
-    // Sort nodes based on diversity score in descending order
-    nodeDiversities.sort((nd1, nd2) -> Double.compare(nd2.diversityScore, nd1.diversityScore));
-
-    // Extract and return the sorted list of nodes
-    List<Node> sortedNodes = new ArrayList<>();
-    for (NodeDiversity nd : nodeDiversities) {
-      sortedNodes.add(nd.node);
-    }
-    return sortedNodes;
+    return nodeDiversities;
   }
 
   private double calculateDiversity(Node candidate, List<Node> nodes, SearchTable searchTable) {
@@ -215,63 +209,59 @@ public abstract class SamplingOperation extends FindOperation {
     }
   }
 
-  public List<Node> orderByRating(Collection<Node> nodeCollection, SearchTable searchTable) {
+  public List<NodeRating> orderByRating(Collection<Node> nodeCollection, SearchTable searchTable) {
     List<Node> nodes = new ArrayList<>(nodeCollection);
     List<NodeRating> nodesByRating = new ArrayList<>();
 
     for (Node candidate : nodes) {
-      Integer candidateRating = searchTable.getRatedNode(candidate.getId()).getRating();
+      Double candidateRating = searchTable.getRatedNode(candidate.getId()).getRating();
       nodesByRating.add(new NodeRating(candidate, candidateRating));
     }
-
-    nodesByRating.sort((nd1, nd2) -> Double.compare(nd1.rating, nd2.rating));
-
-    List<Node> sortedNodes = new ArrayList<>();
-    for (NodeRating nr : nodesByRating) {
-      sortedNodes.add(nr.node);
-    }
-    return sortedNodes;
+    return nodesByRating;
   }
 
   private static class NodeRating {
     Node node;
-    Integer rating;
+    Double rating;
 
-    NodeRating(Node node, Integer rating) {
+    NodeRating(Node node, Double rating) {
       this.node = node;
       this.rating = rating;
     }
   }
 
-  public List<Node> combineLists(
-      List<Node> nodesByDiversity,
-      List<Node> nodesByRating,
+  public static List<Node> combineLists(
+      List<NodeDiversity> nodesByDiversity,
+      List<NodeRating> nodesByRating,
       double diversityWeight,
       double ratingWeight) {
-    HashMap<Node, Integer> diversityRankMap = new HashMap<>();
-    HashMap<Node, Integer> ratingRankMap = new HashMap<>();
 
-    // Assign ranks based on position in the diversity list (starting at 1)
-    for (int i = 0; i < nodesByDiversity.size(); i++) {
-      diversityRankMap.put(nodesByDiversity.get(i), i + 1);
+    Map<Node, Double> combinedScores = new HashMap<>();
+
+    // Add diversity scores to the map
+    for (NodeDiversity nodeDiversity : nodesByDiversity) {
+      combinedScores.put(nodeDiversity.node, diversityWeight * nodeDiversity.diversityScore);
     }
 
-    for (int i = 0; i < nodesByRating.size(); i++) {
-      ratingRankMap.put(nodesByRating.get(i), i + 1);
+    // Add rating scores to the map, ignoring defunct nodes (negative ratings)
+    for (NodeRating nodeRating : nodesByRating) {
+      if (nodeRating.rating >= 0) {
+        double normalisedRating = (double) nodeRating.rating / MAX_RATING;
+        combinedScores.merge(nodeRating.node, (ratingWeight * normalisedRating), Double::sum);
+      }
     }
 
-    // Combined score
-    HashMap<Node, Double> combinedScoreMap = new HashMap<>();
-    for (Node node : nodesByDiversity) {
-      int diversityRank = diversityRankMap.get(node);
-      int ratingRank = ratingRankMap.get(node);
-      double combinedScore = diversityWeight * diversityRank + ratingWeight * ratingRank;
-      combinedScoreMap.put(node, combinedScore);
-    }
+    // We will end up querying defunct nodes *eventually*, but they'll be at the bottom of the list.
 
-    // Create a list from the keys of the map and sort it by combined score
-    List<Node> combinedList = new ArrayList<>(combinedScoreMap.keySet());
-    combinedList.sort(Comparator.comparingDouble(combinedScoreMap::get));
+    // Create a list from the map entries and sort it by the combined score in descending order
+    List<Map.Entry<Node, Double>> sortedEntries = new ArrayList<>(combinedScores.entrySet());
+    sortedEntries.sort((e1, e2) -> Double.compare(e2.getValue(), e1.getValue()));
+
+    // Extract the nodes in the sorted order
+    List<Node> combinedList = new ArrayList<>();
+    for (Map.Entry<Node, Double> entry : sortedEntries) {
+      combinedList.add(entry.getKey());
+    }
 
     return combinedList;
   }

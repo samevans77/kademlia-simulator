@@ -75,7 +75,9 @@ public class KademliaCommonConfigDas {
 
   public static int MAX_PARENT_DEPTH = 3;
 
-  public static int RATED_SUCCESSFUL_SAMPLE_CHANGE = 1;
-  public static int RATED_FAILED_SAMPLE_CHANGE = -1;
-  public static int INITIAL_RATING = 0;
+  public static Double RATED_SUCCESSFUL_SAMPLE_CHANGE = 1.0;
+  public static Double INITIAL_RATING = 0.0;
+  public static Double MAX_RATING = 50.0;
+
+  public static int MAX_ACCEPTED_FAILURES = 3;
 }
