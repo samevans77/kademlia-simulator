@@ -66,14 +66,14 @@ public class KademliaCommonConfigDas {
 
   public static long TTL = 100000;
 
-  public static long ATTACK_TIME = 2000;
+  public static long ATTACK_TIME = 30000;
 
-  public static boolean SECURITY_ACTIVE = false;
+  public static boolean SECURITY_ACTIVE = true;
 
   public static double DIVERSITY_WEIGHT = 0.5;
   public static double RATING_WEIGHT = 0.5;
 
-  public static int MAX_PARENT_DEPTH = 3;
+  public static int MAX_PARENT_DEPTH = 1;
 
   public static Double RATED_SUCCESSFUL_SAMPLE_CHANGE = 1.0;
   public static Double INITIAL_RATING = 0.0;

@@ -45,6 +45,8 @@ public abstract class SamplingOperation extends FindOperation {
 
   protected static final double MAX_RATING = KademliaCommonConfigDas.MAX_RATING;
 
+  protected static final int MAX_PARENT_DEPTH = KademliaCommonConfigDas.MAX_PARENT_DEPTH;
+
   public SamplingOperation(
       BigInteger srcNode,
       BigInteger destNode,
@@ -132,10 +134,21 @@ public abstract class SamplingOperation extends FindOperation {
     List<Node> nodeList = new ArrayList<>();
 
     if (securityActive) {
-      // SECURITY: ORDER NODES BY DIVERSITY, AND RATING - THEN COMBINE
-      List<NodeDiversity> nodesByDiversity = orderByDiversity(nodes.values(), searchTable);
+      // System.out.println("Calculating nodesByDiversity for " + nodes.values().size() + "
+      // nodes.");
+      // List<NodeDiversity> nodesByDiversity = orderByDiversity(nodes.values(), searchTable);
+      System.out.println("Calculating nodesByRating...");
       List<NodeRating> nodesByRating = orderByRating(nodes.values(), searchTable);
-      nodeList = combineLists(nodesByDiversity, nodesByRating, DIVERSITY_WEIGHT, RATING_WEIGHT);
+
+      for (NodeRating nr : nodesByRating) {
+        nodeList.add(nr.node);
+      }
+
+      // Clearing this iteration's known parents
+      searchTable.clearKnownParents();
+      // System.out.println("LENGTH OF DIVERSITY LIST: " + nodesByDiversity.size());
+      // System.out.println("LENGTH OF RATING LIST: " + nodesByRating.size());
+      // nodeList = combineLists(nodesByDiversity, nodesByRating, DIVERSITY_WEIGHT, RATING_WEIGHT);
     } else {
       nodeList = new ArrayList<>(nodes.values());
     }
@@ -174,13 +187,19 @@ public abstract class SamplingOperation extends FindOperation {
   }
 
   private double calculateDiversity(Node candidate, List<Node> nodes, SearchTable searchTable) {
-    Set<BigInteger> candidateAncestors = searchTable.getParents(candidate.getId(), 3);
+    Set<BigInteger> candidateAncestors =
+        searchTable.getParents(candidate.getId(), MAX_PARENT_DEPTH);
     double diversityScore = 0;
+
+    // If the candidate has no parents, it has no diversity in parents.
+    if (searchTable.getParents(candidate.getId(), MAX_PARENT_DEPTH).isEmpty()) {
+      return 0;
+    }
 
     for (Node node : nodes) {
       // Don't compare the candidate to itself.
       if (node == candidate) continue;
-      Set<BigInteger> nodeAncestors = searchTable.getParents(node.getId(), 3);
+      Set<BigInteger> nodeAncestors = searchTable.getParents(node.getId(), MAX_PARENT_DEPTH);
       diversityScore += jaccardDistance(candidateAncestors, nodeAncestors);
     }
     return diversityScore / (nodes.size() - 1);
@@ -220,6 +239,8 @@ public abstract class SamplingOperation extends FindOperation {
       Double candidateRating = searchTable.getRatedNode(candidate.getId()).getRating();
       nodesByRating.add(new NodeRating(candidate, candidateRating));
     }
+
+    nodesByRating.sort((node1, node2) -> Double.compare(node2.getRating(), node1.getRating()));
     return nodesByRating;
   }
 
@@ -230,6 +251,10 @@ public abstract class SamplingOperation extends FindOperation {
     NodeRating(Node node, Double rating) {
       this.node = node;
       this.rating = rating;
+    }
+
+    public double getRating() {
+      return rating;
     }
   }
 

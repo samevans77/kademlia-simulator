@@ -22,6 +22,8 @@ public class SearchTable {
   // Used to send known nodes to other peers
   private HashMap<BigInteger, Neighbour> neighbours;
 
+  private HashMap<BigInteger, Set<BigInteger>> knownParents;
+
   // private HashMap<BigInteger, Integer> ratedList;
   private HashMap<BigInteger, RatedNode> ratedList;
   private static Integer maxParentDepth = KademliaCommonConfigDas.MAX_PARENT_DEPTH;
@@ -51,6 +53,7 @@ public class SearchTable {
     this.neighbours = new HashMap<>();
     this.parents = new HashMap<>();
     this.ratedList = new HashMap<>();
+    this.knownParents = new HashMap<>();
   }
 
   /**
@@ -318,6 +321,11 @@ public class SearchTable {
    */
   public Set<BigInteger> getParents(BigInteger targetID, int maxDepth) {
 
+    // Heuristic for known parents per list.
+    if (knownParents.containsKey(targetID)) {
+      return knownParents.get(targetID);
+    }
+
     // Create a set to avoid duplicate values
     Set<BigInteger> allParents = new HashSet<>();
 
@@ -325,6 +333,7 @@ public class SearchTable {
     findAllParents(targetID, allParents, 0, maxDepth);
 
     // Return a list of the set
+    knownParents.put(targetID, allParents);
     return allParents;
   }
 
@@ -337,6 +346,9 @@ public class SearchTable {
 
     // Collect current direct parents from this node
     List<BigInteger> directParents = parents.get(targetID);
+
+    // if (directParents != null)
+    //  System.out.println("Number of direct parents:" + directParents.size());
 
     // As long as the parents aren't nothing, enumerate them and if we haven't seen them before, get
     // their parents (up to the given depth)
@@ -355,8 +367,10 @@ public class SearchTable {
    * @param failedNode The node ID of the node which failed to respond
    */
   public void failedSample(BigInteger failedNode) {
-    if (!ratedList.containsKey(failedNode))
+    if (!ratedList.containsKey(failedNode)) {
+      System.out.println("failedSample: Creating new RatedNode");
       ratedList.put(failedNode, new RatedNode(failedNode, initialRating));
+    }
 
     Set<BigInteger> parents = getParents(failedNode, maxParentDepth);
     ratedList.get(failedNode).failedSample();
@@ -374,8 +388,11 @@ public class SearchTable {
    */
   public void successfulSample(BigInteger successfulNode) {
 
-    if (!ratedList.containsKey(successfulNode))
+    if (!ratedList.containsKey(successfulNode)) {
+      System.out.println("successfulSample: Creating new RatedNode");
       ratedList.put(successfulNode, new RatedNode(successfulNode, initialRating));
+    }
+
     ratedList.get(successfulNode).successfulSample();
 
     Set<BigInteger> parents = getParents(successfulNode, maxParentDepth);
@@ -387,7 +404,10 @@ public class SearchTable {
   // Potentially bad algorithm, returns a rated node no matter what - creating a new one if one of
   // the same ID doesn't already exist.
   public RatedNode getRatedNode(BigInteger nodeID) {
-    if (!ratedList.containsKey(nodeID)) ratedList.put(nodeID, new RatedNode(nodeID, initialRating));
+    if (!ratedList.containsKey(nodeID)) {
+      System.out.println("getRatedNode: Creating new RatedNode");
+      ratedList.put(nodeID, new RatedNode(nodeID, initialRating));
+    }
     return ratedList.get(nodeID);
   }
 
@@ -411,5 +431,9 @@ public class SearchTable {
         removeNode(n.getId());
       }
     }
+  }
+
+  public void clearKnownParents() {
+    knownParents = new HashMap<>();
   }
 }
