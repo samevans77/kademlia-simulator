@@ -12,6 +12,7 @@ import java.util.Set;
 import peersim.kademlia.das.Block;
 import peersim.kademlia.das.KademliaCommonConfigDas;
 import peersim.kademlia.das.MissingNode;
+import peersim.kademlia.das.RatedListMember;
 import peersim.kademlia.das.Sample;
 import peersim.kademlia.das.SearchTable;
 import peersim.kademlia.operations.FindOperation;
@@ -46,6 +47,8 @@ public abstract class SamplingOperation extends FindOperation {
   protected static final double MAX_RATING = KademliaCommonConfigDas.MAX_RATING;
 
   protected static final int MAX_PARENT_DEPTH = KademliaCommonConfigDas.MAX_PARENT_DEPTH;
+
+  protected HashMap<BigInteger, Set<RatedListMember>> knownParents;
 
   public SamplingOperation(
       BigInteger srcNode,
@@ -134,21 +137,20 @@ public abstract class SamplingOperation extends FindOperation {
     List<Node> nodeList = new ArrayList<>();
 
     if (securityActive) {
-      // System.out.println("Calculating nodesByDiversity for " + nodes.values().size() + "
-      // nodes.");
-      // List<NodeDiversity> nodesByDiversity = orderByDiversity(nodes.values(), searchTable);
+      // Clearing the known parents list.
+      knownParents = new HashMap<>();
+      System.out.println("Calculating nodesByDiversity for " + nodes.values().size() + " nodes.");
+      List<NodeDiversity> nodesByDiversity = orderByDiversity(nodes.values(), searchTable);
       System.out.println("Calculating nodesByRating...");
       List<NodeRating> nodesByRating = orderByRating(nodes.values(), searchTable);
+      // List<NodeRating> nodesByRating = orderByRating(nodes.values(), searchTable);
 
-      for (NodeRating nr : nodesByRating) {
-        nodeList.add(nr.node);
-      }
-
-      // Clearing this iteration's known parents
-      searchTable.clearKnownParents();
+      // for (NodeRating nr : nodesByRating) {
+      //   nodeList.add(nr.node);
+      // }
       // System.out.println("LENGTH OF DIVERSITY LIST: " + nodesByDiversity.size());
       // System.out.println("LENGTH OF RATING LIST: " + nodesByRating.size());
-      // nodeList = combineLists(nodesByDiversity, nodesByRating, DIVERSITY_WEIGHT, RATING_WEIGHT);
+      nodeList = combineLists(nodesByDiversity, nodesByRating, DIVERSITY_WEIGHT, RATING_WEIGHT);
     } else {
       nodeList = new ArrayList<>(nodes.values());
     }
@@ -187,19 +189,18 @@ public abstract class SamplingOperation extends FindOperation {
   }
 
   private double calculateDiversity(Node candidate, List<Node> nodes, SearchTable searchTable) {
-    Set<BigInteger> candidateAncestors =
-        searchTable.getParents(candidate.getId(), MAX_PARENT_DEPTH);
+    Set<RatedListMember> candidateAncestors = getNodeParents(candidate.getId(), searchTable);
     double diversityScore = 0;
 
     // If the candidate has no parents, it has no diversity in parents.
-    if (searchTable.getParents(candidate.getId(), MAX_PARENT_DEPTH).isEmpty()) {
+    if (candidateAncestors.isEmpty()) {
       return 0;
     }
 
     for (Node node : nodes) {
       // Don't compare the candidate to itself.
       if (node == candidate) continue;
-      Set<BigInteger> nodeAncestors = searchTable.getParents(node.getId(), MAX_PARENT_DEPTH);
+      Set<RatedListMember> nodeAncestors = getNodeParents(node.getId(), searchTable);
       diversityScore += jaccardDistance(candidateAncestors, nodeAncestors);
     }
     return diversityScore / (nodes.size() - 1);
@@ -207,11 +208,21 @@ public abstract class SamplingOperation extends FindOperation {
     // return diversityScore // Could just be like this instead if we wanted highest absolute score
   }
 
-  private double jaccardDistance(Set<BigInteger> set1, Set<BigInteger> set2) {
-    Set<BigInteger> intersection = new HashSet<>(set1);
+  private Set<RatedListMember> getNodeParents(BigInteger nodeID, SearchTable searchTable) {
+    if (!knownParents.containsKey(nodeID))
+      knownParents.put(nodeID, searchTable.getRatedListMember(nodeID).getAllParents());
+    return knownParents.get(nodeID);
+  }
+
+  private void clearKnownParents() {
+    knownParents = new HashMap<>();
+  }
+
+  private double jaccardDistance(Set<RatedListMember> set1, Set<RatedListMember> set2) {
+    Set<RatedListMember> intersection = new HashSet<>(set1);
     intersection.retainAll(set2);
 
-    Set<BigInteger> union = new HashSet<>(set1);
+    Set<RatedListMember> union = new HashSet<>(set1);
     union.addAll(set2);
 
     return 1.0
@@ -236,7 +247,7 @@ public abstract class SamplingOperation extends FindOperation {
     List<NodeRating> nodesByRating = new ArrayList<>();
 
     for (Node candidate : nodes) {
-      Double candidateRating = searchTable.getRatedNode(candidate.getId()).getRating();
+      Double candidateRating = searchTable.getRatedListMember(candidate.getId()).getRating();
       nodesByRating.add(new NodeRating(candidate, candidateRating));
     }
 

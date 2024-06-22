@@ -166,7 +166,9 @@ public class CustomDistributionDas implements peersim.core.Control {
           generalNode
               .getDASProtocol()
               .getSearchTable()
-              .addNeighbour(new Neighbour(n.getDASProtocol().getKademliaId(), n, false), null);
+              .addNeighbour(
+                  new Neighbour(n.getDASProtocol().getKademliaId(), n, false),
+                  BigInteger.valueOf(-1));
       }
       // bootstrap searchtables of evil nodes with other evil nodes
       if (generalNode.getDASProtocol().isEvil()) {
@@ -175,7 +177,7 @@ public class CustomDistributionDas implements peersim.core.Control {
           if (evilNghbr.getId().equals(generalNode.getDASProtocol().getKademliaId()))
             // skip myself
             continue;
-          sTable.addNeighbour(evilNghbr, null);
+          sTable.addNeighbour(evilNghbr, BigInteger.valueOf(-1));
         }
       }
     }

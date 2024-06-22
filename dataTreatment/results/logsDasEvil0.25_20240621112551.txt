@@ -1,3 +1,5 @@
+RATING LIST
+
 Number of entries with type 'ValidatorSamplingOperation': 21210 
 
 Number of 'completed' values that are 'yes': 15451

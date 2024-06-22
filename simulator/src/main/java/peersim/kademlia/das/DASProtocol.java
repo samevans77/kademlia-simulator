@@ -584,7 +584,8 @@ public abstract class DASProtocol implements Cloneable, EDProtocol, KademliaEven
       for (BigInteger id : list) {
         Node n = Util.nodeIdtoNode(id, kademliaId);
         searchTable.addNeighbour(
-            new Neighbour(id, n, n.getDASProtocol().isEvil()), null); // Not sure if this is right
+            new Neighbour(id, n, n.getDASProtocol().isEvil()),
+            BigInteger.valueOf(-1)); // Not sure if this is right
       }
       logger.warning(
           "Search table operation complete"
@@ -623,7 +624,8 @@ public abstract class DASProtocol implements Cloneable, EDProtocol, KademliaEven
     for (BigInteger id : list) {
       Node n = Util.nodeIdtoNode(id, kademliaId);
       searchTable.addNeighbour(
-          new Neighbour(id, n, n.getDASProtocol().isEvil()), null); // modified for dst node
+          new Neighbour(id, n, n.getDASProtocol().isEvil()),
+          BigInteger.valueOf(-1)); // modified for dst node
     }
     logger.info(
         "Search table nodes found " + searchTable.nodesIndexed().size() + " " + neighbours.length);

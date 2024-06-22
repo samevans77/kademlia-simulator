@@ -156,7 +156,8 @@ public class TurbulenceDas implements Control {
         if (jKad.getKademliaNode().isServer()) {
           newKad.getRoutingTable().addNeighbour(jKad.getKademliaNode().getId());
           dasProt.searchTable.addNeighbour(
-              new Neighbour(jKad.getKademliaNode().getId(), n, n.getDASProtocol().isEvil()), null);
+              new Neighbour(jKad.getKademliaNode().getId(), n, n.getDASProtocol().isEvil()),
+              BigInteger.valueOf(-1));
         }
       }
       k++;

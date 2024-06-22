@@ -80,4 +80,6 @@ public class KademliaCommonConfigDas {
   public static Double MAX_RATING = 50.0;
 
   public static int MAX_ACCEPTED_FAILURES = 3;
+
+  public static int MAX_RATED_LEVEL = 3;
 }
