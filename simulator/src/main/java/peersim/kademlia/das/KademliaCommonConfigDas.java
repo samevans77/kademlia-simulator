@@ -68,7 +68,7 @@ public class KademliaCommonConfigDas {
 
     public static long ATTACK_TIME = 150000;
 
-    public static boolean SECURITY_ACTIVE = false;
+    public static boolean SECURITY_ACTIVE = true;
 
   public static double DIVERSITY_WEIGHT = 0.5;
   public static double RATING_WEIGHT = 0.5;
