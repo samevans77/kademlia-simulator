@@ -422,8 +422,8 @@ public class SearchTable {
     // }
 
     if (!allRatedMembers.containsKey(failedNode)) {
-      System.out.println("FailedSample: Node doesn't exist. Stopping.");
-      System.exit(1);
+      System.out.println("Tried to get node which doesn't exist. Adding to the bottom level");
+      addNewChild(failedNode, BigInteger.valueOf(-1));
     }
 
     RatedListMember failedRatedNode = allRatedMembers.get(failedNode);
@@ -445,8 +445,8 @@ public class SearchTable {
   public void successfulSample(BigInteger successfulNode) {
 
     if (!allRatedMembers.containsKey(successfulNode)) {
-      System.out.println("SuccessfulSample: Node doesn't exist. Stopping.");
-      System.exit(1);
+      System.out.println("Tried to get node which doesn't exist. Adding to the bottom level");
+      addNewChild(successfulNode, BigInteger.valueOf(-1));
     }
 
     RatedListMember successfulRatedNode = allRatedMembers.get(successfulNode);

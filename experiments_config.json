@@ -1,0 +1,68 @@
+[
+    {
+        "experiment_name": "25pcEvilSecTrue",
+        "KademliaCommonConfig": {
+            "ATTACK_TIME": 150000,
+            "SECURITY_ACTIVE": true
+        },
+        "dasprotocolevil0.25": {
+            "attackTime": 150000,
+            "evilNodeRatioValidator": 0.25
+        }
+    },
+    {
+        "experiment_name": "25pcEvilSecFalse",
+        "KademliaCommonConfig": {
+            "ATTACK_TIME": 150000,
+            "SECURITY_ACTIVE": false
+        },
+        "dasprotocolevil0.25": {
+            "attackTime": 150000,
+            "evilNodeRatioValidator": 0.25
+        }
+    },
+    {
+        "experiment_name": "50pcEvilSecTrue",
+        "KademliaCommonConfig": {
+            "ATTACK_TIME": 150000,
+            "SECURITY_ACTIVE": true
+        },
+        "dasprotocolevil0.25": {
+            "attackTime": 150000,
+            "evilNodeRatioValidator": 0.50
+        }
+    },
+    {
+        "experiment_name": "50pcEvilSecFalse",
+        "KademliaCommonConfig": {
+            "ATTACK_TIME": 150000,
+            "SECURITY_ACTIVE": false
+        },
+        "dasprotocolevil0.25": {
+            "attackTime": 150000,
+            "evilNodeRatioValidator": 0.50
+        }
+    },
+    {
+        "experiment_name": "75pcEvilSecTrue",
+        "KademliaCommonConfig": {
+            "ATTACK_TIME": 150000,
+            "SECURITY_ACTIVE": true
+        },
+        "dasprotocolevil0.25": {
+            "attackTime": 150000,
+            "evilNodeRatioValidator": 0.75
+        }
+    },
+    {
+        "experiment_name": "75pcEvilSecFalse",
+        "KademliaCommonConfig": {
+            "ATTACK_TIME": 150000,
+            "SECURITY_ACTIVE": true
+        },
+        "dasprotocolevil0.25": {
+            "attackTime": 150000,
+            "evilNodeRatioValidator": 0.75
+        }
+    }
+]

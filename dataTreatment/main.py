@@ -9,7 +9,15 @@ def get_parent_dir(directory):
     return os.path.dirname(directory)
 
 if __name__ == "__main__":
+
+    if len(sys.argv) != 4:
+        print("[FAIL] Usage: ./run.sh [directory] [step] [attackTime]")
+        exit(3)
+
     directory = sys.argv[1]
+    step = sys.argv[2]
+    attackTime = sys.argv[3]
+
 
     current_dirs_parent = get_parent_dir(getcwd())
     target_dir = join(current_dirs_parent, 'simulator', directory)

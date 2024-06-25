@@ -1,3 +1,4 @@
+#!/bin/bash
 if [ "$#" -ne 1 ]; then
     echo "Provide the config file name to run"
     exit 1

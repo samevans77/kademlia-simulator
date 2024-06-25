@@ -1,0 +1,72 @@
+import json
+import os
+import subprocess
+
+# Path to the JSON config file
+config_file = 'experiments_config.json'
+
+run_file = 'run.sh'
+
+# Load the JSON config
+with open(config_file, 'r') as f:
+    experiments = json.load(f)
+
+# Function to update configurations
+def update_config(experiment):
+    # Extract values from the JSON config
+    attack_time = experiment['KademliaCommonConfig']['ATTACK_TIME']
+    security_active = experiment['KademliaCommonConfig']['SECURITY_ACTIVE']
+    evil_node_ratio = experiment['dasprotocolevil0.25']['evilNodeRatioValidator']
+
+    # Update KademliaCommonConfig.java
+    java_file = 'simulator/src/main/java/peersim/kademlia/das/KademliaCommonConfigDas.java'
+    with open(java_file, 'r') as f:
+        java_lines = f.readlines()
+
+    with open(java_file, 'w') as f:
+        for line in java_lines:
+            if 'public static long ATTACK_TIME' in line:
+                line = f'    public static long ATTACK_TIME = {attack_time};\n'
+            elif 'public static boolean SECURITY_ACTIVE' in line:
+                line = f'    public static boolean SECURITY_ACTIVE = {"true" if security_active else "false"};\n'
+            f.write(line)
+
+    # Update dasprotocolevil0.25.cfg
+    cfg_file = 'simulator/config/malicious/dasprotocolevil0.25.cfg'
+    with open(cfg_file, 'r') as f:
+        cfg_lines = f.readlines()
+
+    with open(cfg_file, 'w') as f:
+        for line in cfg_lines:
+            if 'protocol.7evildasprotocol.attackTime' in line:
+                line = f'protocol.7evildasprotocol.attackTime {attack_time}\n'
+            elif 'init.1uniqueNodeID.evilNodeRatioValidator' in line:
+                line = f'init.1uniqueNodeID.evilNodeRatioValidator {evil_node_ratio}\n'
+            f.write(line)
+
+    print(f"Configuration files for experiment '{experiment['experiment_name']}' updated successfully.")
+
+def package_changes(target_directory):
+    try:
+        # Check if the directory exists
+        if not os.path.isdir(target_directory):
+            raise FileNotFoundError(f"The directory {target_directory} does not exist.")
+
+        # Execute the mvn package command in the target directory
+        result = subprocess.run(["mvn", "package"], capture_output=True, text=True, cwd=target_directory)
+
+        # Print the output
+        print(result.stdout)
+        print(result.stderr)
+    except Exception as e:
+        print(f"An error occurred: {e}")
+
+# Iterate over each experiment configuration and update configurations
+for experiment in experiments:
+    print("Updating " + experiment["experiment_name"])
+    update_config(experiment)
+    os.system("./test.sh")
+    print("Running data collection...")
+    os.system(f"./dataTreatment/run.sh logsDasEvil0.25 {12000} {experiment['KademliaCommonConfig']['ATTACK_TIME']}")
+    
+print("All experiments done!")
