@@ -5,10 +5,11 @@ SIMULATOR_ARGS="config/malicious/dasprotocolevil0.25.cfg" # replace with actual 
 
 # Run the script in the simulator directory
 echo "Packaging changes with Maven..."
-cd ~/RP2/kademlia-simulator/simulator
+cd simulator
 mvn package
 wait
 echo "Running simulator script..."
+pwd
 ./run.sh $SIMULATOR_ARGS
 
 # Wait for the simulator script to complete

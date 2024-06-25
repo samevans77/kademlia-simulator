@@ -2,13 +2,14 @@
     {
         "experiment_name": "25pcEvilSecTrue",
         "KademliaCommonConfig": {
-            "ATTACK_TIME": 150000,
+            "ATTACK_TIME": 1,
             "SECURITY_ACTIVE": true,
             "MAX_FAILURES": 3
         },
         "dasprotocolevil0.25": {
-            "attackTime": 150000,
-            "evilNodeRatioValidator": 0.25
+            "attackTime": 1,
+            "evilNodeRatioValidator": 0.25,
+            "sim_time": "1000*60*2"
         }
     },
     {
@@ -20,7 +21,8 @@
         },
         "dasprotocolevil0.25": {
             "attackTime": 150000,
-            "evilNodeRatioValidator": 0.25
+            "evilNodeRatioValidator": 0.25,
+            "sim_time": "1000*60*1"
         }
     },
     {
@@ -32,7 +34,8 @@
         },
         "dasprotocolevil0.25": {
             "attackTime": 150000,
-            "evilNodeRatioValidator": 0.50
+            "evilNodeRatioValidator": 0.50,
+            "sim_time": "1000*60*1"
         }
     },
     {
@@ -44,7 +47,8 @@
         },
         "dasprotocolevil0.25": {
             "attackTime": 150000,
-            "evilNodeRatioValidator": 0.50
+            "evilNodeRatioValidator": 0.50,
+            "sim_time": "1000*60*1"
         }
     },
     {
@@ -56,7 +60,8 @@
         },
         "dasprotocolevil0.25": {
             "attackTime": 150000,
-            "evilNodeRatioValidator": 0.75
+            "evilNodeRatioValidator": 0.75,
+            "sim_time": "1000*60*1"
         }
     },
     {
@@ -68,7 +73,8 @@
         },
         "dasprotocolevil0.25": {
             "attackTime": 150000,
-            "evilNodeRatioValidator": 0.75
+            "evilNodeRatioValidator": 0.75,
+            "sim_time": "1000*60*1"
         }
     }
 ]
