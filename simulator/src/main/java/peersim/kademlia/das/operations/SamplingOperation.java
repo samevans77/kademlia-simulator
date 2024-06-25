@@ -139,18 +139,18 @@ public abstract class SamplingOperation extends FindOperation {
     if (securityActive) {
       // Clearing the known parents list.
       knownParents = new HashMap<>();
-      System.out.println("Calculating nodesByDiversity for " + nodes.values().size() + " nodes.");
-      List<NodeDiversity> nodesByDiversity = orderByDiversity(nodes.values(), searchTable);
+      // System.out.println("Calculating nodesByDiversity for " + nodes.values().size() + " nodes.");
+      // List<NodeDiversity> nodesByDiversity = orderByDiversity(nodes.values(), searchTable);
       System.out.println("Calculating nodesByRating...");
       List<NodeRating> nodesByRating = orderByRating(nodes.values(), searchTable);
       // List<NodeRating> nodesByRating = orderByRating(nodes.values(), searchTable);
 
-      // for (NodeRating nr : nodesByRating) {
-      //   nodeList.add(nr.node);
-      // }
+      for (NodeRating nr : nodesByRating) {
+        nodeList.add(nr.node);
+      }
       // System.out.println("LENGTH OF DIVERSITY LIST: " + nodesByDiversity.size());
       // System.out.println("LENGTH OF RATING LIST: " + nodesByRating.size());
-      nodeList = combineLists(nodesByDiversity, nodesByRating, DIVERSITY_WEIGHT, RATING_WEIGHT);
+      // nodeList = combineLists(nodesByDiversity, nodesByRating, DIVERSITY_WEIGHT, RATING_WEIGHT);
     } else {
       nodeList = new ArrayList<>(nodes.values());
     }
