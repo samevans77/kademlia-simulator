@@ -3,7 +3,8 @@
         "experiment_name": "25pcEvilSecTrue",
         "KademliaCommonConfig": {
             "ATTACK_TIME": 150000,
-            "SECURITY_ACTIVE": true
+            "SECURITY_ACTIVE": true,
+            "MAX_FAILURES": 3
         },
         "dasprotocolevil0.25": {
             "attackTime": 150000,
@@ -14,7 +15,8 @@
         "experiment_name": "25pcEvilSecFalse",
         "KademliaCommonConfig": {
             "ATTACK_TIME": 150000,
-            "SECURITY_ACTIVE": false
+            "SECURITY_ACTIVE": false,
+            "MAX_FAILURES": 3
         },
         "dasprotocolevil0.25": {
             "attackTime": 150000,
@@ -25,7 +27,8 @@
         "experiment_name": "50pcEvilSecTrue",
         "KademliaCommonConfig": {
             "ATTACK_TIME": 150000,
-            "SECURITY_ACTIVE": true
+            "SECURITY_ACTIVE": true,
+            "MAX_FAILURES": 3
         },
         "dasprotocolevil0.25": {
             "attackTime": 150000,
@@ -36,7 +39,8 @@
         "experiment_name": "50pcEvilSecFalse",
         "KademliaCommonConfig": {
             "ATTACK_TIME": 150000,
-            "SECURITY_ACTIVE": false
+            "SECURITY_ACTIVE": false,
+            "MAX_FAILURES": 3
         },
         "dasprotocolevil0.25": {
             "attackTime": 150000,
@@ -47,7 +51,8 @@
         "experiment_name": "75pcEvilSecTrue",
         "KademliaCommonConfig": {
             "ATTACK_TIME": 150000,
-            "SECURITY_ACTIVE": true
+            "SECURITY_ACTIVE": true,
+            "MAX_FAILURES": 3
         },
         "dasprotocolevil0.25": {
             "attackTime": 150000,
@@ -58,7 +63,8 @@
         "experiment_name": "75pcEvilSecFalse",
         "KademliaCommonConfig": {
             "ATTACK_TIME": 150000,
-            "SECURITY_ACTIVE": true
+            "SECURITY_ACTIVE": true,
+            "MAX_FAILURES": 3
         },
         "dasprotocolevil0.25": {
             "attackTime": 150000,

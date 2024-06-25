@@ -1,6 +1,7 @@
 import json
 import os
 import subprocess
+import time
 
 # Path to the JSON config file
 config_file = 'experiments_config.json'
@@ -16,6 +17,7 @@ def update_config(experiment):
     # Extract values from the JSON config
     attack_time = experiment['KademliaCommonConfig']['ATTACK_TIME']
     security_active = experiment['KademliaCommonConfig']['SECURITY_ACTIVE']
+    max_fails = experiment['KademliaCommonConfig']['MAX_FAILURES']
     evil_node_ratio = experiment['dasprotocolevil0.25']['evilNodeRatioValidator']
 
     # Update KademliaCommonConfig.java
@@ -29,6 +31,8 @@ def update_config(experiment):
                 line = f'    public static long ATTACK_TIME = {attack_time};\n'
             elif 'public static boolean SECURITY_ACTIVE' in line:
                 line = f'    public static boolean SECURITY_ACTIVE = {"true" if security_active else "false"};\n'
+            elif 'public static boolean SECURITY_ACTIVE' in line:
+                line = f'    public static int MAX_RATED_LEVEL = {max_fails};\n'
             f.write(line)
 
     # Update dasprotocolevil0.25.cfg
@@ -66,7 +70,9 @@ for experiment in experiments:
     print("Updating " + experiment["experiment_name"])
     update_config(experiment)
     os.system("./test.sh")
+    print("Waiting 5 seconds for files to populate...")
+    time.sleep(5)
     print("Running data collection...")
-    os.system(f"./dataTreatment/run.sh logsDasEvil0.25 {12000} {experiment['KademliaCommonConfig']['ATTACK_TIME']}")
+    os.system(f"./dataTreatment/run.sh logsDasEvil0.25 {12000} {experiment['KademliaCommonConfig']['ATTACK_TIME']} {experiment['experiment_name']}")
     
 print("All experiments done!")

@@ -10,8 +10,8 @@ def get_parent_dir(directory):
 
 if __name__ == "__main__":
 
-    if len(sys.argv) != 4:
-        print("[FAIL] Usage: ./run.sh [directory] [step] [attackTime]")
+    if len(sys.argv) != 5:
+        print("[FAIL] Usage: ./run.sh [directory] [step] [attackTime] [output]")
         exit(3)
 
     directory = sys.argv[1]
@@ -19,12 +19,14 @@ if __name__ == "__main__":
     try:
         step_time = int(sys.argv[2])
         attackTime = int(sys.argv[3])
+        out_name = sys.argv[4]
     except:
-        print("[FAIL] Steps or attacktime not given as integers. Usage: ./run.sh [directory] [step] [attackTime]")
+        print("[FAIL] Steps or attacktime not given as integers. Usage: ./run.sh [directory] [step] [attackTime] [output]")
         exit(4)
 
-    # current_dirs_parent = get_parent_dir(getcwd())
     target_dir = join('simulator', directory)
+
+    print("target_dir: " + target_dir)
 
     if not(isdir(target_dir)):
         print("[FAIL] Directory: "+ target_dir +" does not exist. Usage: ./run.sh [directory] [step] [attackTime]")
@@ -34,6 +36,8 @@ if __name__ == "__main__":
     for file in files:
         if file == "operation.csv":
             df = pd.read_csv(join(target_dir, file))
+            print("read_csv on: " + join(target_dir, file))
+            print("Current working directory: " + getcwd())
 
     if df is None or df.empty:
         print(f"[FAIL] operation.csv not found in {target_dir}")
@@ -96,7 +100,7 @@ if __name__ == "__main__":
 
     timestamp = datetime.now().strftime('%Y%m%d%H%M%S')
     target_name = basename(target_dir)
-    output_file = join(results_dir, f"{target_name}_{timestamp}.txt")
+    output_file = join(results_dir, f"{out_name}_{timestamp}.txt")
 
     with open(output_file, 'w') as f:
         f.write(f"Number of entries with type 'ValidatorSamplingOperation': {totalValidatorSamplingOperations} \n\n")
