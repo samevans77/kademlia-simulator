@@ -90,9 +90,9 @@ if __name__ == "__main__":
     print(f"Number of entries with type 'ValidatorSamplingOperation': {totalValidatorSamplingOperations} \n\n")
     print(f"Number of 'completed' values that are 'yes': {afterAttackValidatorSuccessSamples}\n")
     print(f"Number of 'completed' values that are 'no': {afterAttackValidatorFailedSamples}\n\n")
-    print(f"Percentage of 'completed' values that are 'yes': {afterAttackValidatorSuccessSamples/totalValidatorSamplingOperations}%\n")
-    print(f"Percentage of 'completed' values that are 'no': {afterAttackValidatorFailedSamples/totalValidatorSamplingOperations}%\n\n")
-    print(f"Average 'completion_time' for 'ValidatorSamplingOperation': {totalCompletionTime/totalValidatorSamplingOperations}")
+    print(f"Percentage of 'completed' values that are 'yes': {afterAttackValidatorSuccessSamples / totalValidatorSamplingOperations if totalValidatorSamplingOperations != 0 else 0}%\n")
+    print(f"Percentage of 'completed' values that are 'no': {afterAttackValidatorFailedSamples / totalValidatorSamplingOperations if totalValidatorSamplingOperations != 0 else 0}%\n\n")
+    print(f"Average 'completion_time' for 'ValidatorSamplingOperation': {totalCompletionTime / totalValidatorSamplingOperations if totalValidatorSamplingOperations != 0 else 0}")
 
     results_dir = join(getcwd(), 'results')
     if not isdir(results_dir):
@@ -106,8 +106,8 @@ if __name__ == "__main__":
         f.write(f"Number of entries with type 'ValidatorSamplingOperation': {totalValidatorSamplingOperations} \n\n")
         f.write(f"Number of 'completed' values that are 'yes': {afterAttackValidatorSuccessSamples}\n")
         f.write(f"Number of 'completed' values that are 'no': {afterAttackValidatorFailedSamples}\n\n")
-        f.write(f"Percentage of 'completed' values that are 'yes': {afterAttackValidatorSuccessSamples/totalValidatorSamplingOperations}%\n")
-        f.write(f"Percentage of 'completed' values that are 'no': {afterAttackValidatorFailedSamples/totalValidatorSamplingOperations}%\n\n")
-        f.write(f"Average 'completion_time' for 'ValidatorSamplingOperation': {totalCompletionTime/totalValidatorSamplingOperations}")
+        f.write(f"Percentage of 'completed' values that are 'yes': {afterAttackValidatorSuccessSamples / totalValidatorSamplingOperations if totalValidatorSamplingOperations != 0 else 0}%\n")
+        f.write(f"Percentage of 'completed' values that are 'no': {afterAttackValidatorFailedSamples / totalValidatorSamplingOperations if totalValidatorSamplingOperations != 0 else 0}%\n\n")
+        f.write(f"Average 'completion_time' for 'ValidatorSamplingOperation': {totalCompletionTime / totalValidatorSamplingOperations if totalValidatorSamplingOperations != 0 else 0}")
 
     print(f"Results written to {output_file}")

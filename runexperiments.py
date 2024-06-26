@@ -19,6 +19,7 @@ def update_config(experiment):
     security_active = experiment['KademliaCommonConfig']['SECURITY_ACTIVE']
     max_fails = experiment['KademliaCommonConfig']['MAX_FAILURES']
     evil_node_ratio = experiment['dasprotocolevil0.25']['evilNodeRatioValidator']
+    sim_time = experiment['dasprotocolevil0.25']['sim_time']
 
     # Update KademliaCommonConfig.java
     java_file = 'simulator/src/main/java/peersim/kademlia/das/KademliaCommonConfigDas.java'
@@ -46,6 +47,11 @@ def update_config(experiment):
                 line = f'protocol.7evildasprotocol.attackTime {attack_time}\n'
             elif 'init.1uniqueNodeID.evilNodeRatioValidator' in line:
                 line = f'init.1uniqueNodeID.evilNodeRatioValidator {evil_node_ratio}\n'
+            elif 'SIM_TIME' in line:
+                if 'simulation.endtime' not in line:
+                    line = f'SIM_TIME {sim_time}\n'
+            elif 'control.4.logfolder' in line:
+                line = f"control.4.logfolder {experiment['experiment_name']}"
             f.write(line)
 
     print(f"Configuration files for experiment '{experiment['experiment_name']}' updated successfully.")
@@ -73,6 +79,6 @@ for experiment in experiments:
     print("Waiting 5 seconds for files to populate...")
     time.sleep(5)
     print("Running data collection...")
-    os.system(f"./dataTreatment/run.sh logsDasEvil0.25 {12000} {experiment['KademliaCommonConfig']['ATTACK_TIME']} {experiment['experiment_name']}")
+    os.system(f"./dataTreatment/run.sh {experiment['experiment_name']} {12000} {experiment['KademliaCommonConfig']['ATTACK_TIME']} {experiment['experiment_name']}")
     
 print("All experiments done!")
