@@ -31,8 +31,8 @@ def update_config(experiment):
                 line = f'    public static long ATTACK_TIME = {attack_time};\n'
             elif 'public static boolean SECURITY_ACTIVE' in line:
                 line = f'    public static boolean SECURITY_ACTIVE = {"true" if security_active else "false"};\n'
-            elif 'public static boolean SECURITY_ACTIVE' in line:
-                line = f'    public static int MAX_RATED_LEVEL = {max_fails};\n'
+            elif 'public static int MAX_ACCEPTED_FAILURES' in line:
+                line = f'    public static int MAX_ACCEPTED_FAILURES = {max_fails};\n'
             f.write(line)
 
     # Update dasprotocolevil0.25.cfg
