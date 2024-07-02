@@ -47,6 +47,51 @@ for filename in os.listdir(results_dir):
         data_rate_no[pc_value][fail_count] = perc_no
 
 # Sort the data by pc_value
+sorted_data_rate_yes = sorted(data_rate_yes.items())
+
+# Plotting combined completion rates
+def plot_combined_completion_rates(data):
+    pc_values = sorted(data.keys())
+    all_fail_counts = sorted({fail for pc in pc_values for fail in data[pc].keys()})
+    
+    fig, ax = plt.subplots(figsize=(12, 8))
+    
+    width = 0.2  # Width of the bars
+    n = len(pc_values)
+    
+    for i, pc_value in enumerate(pc_values):
+        completion_rates = [data[pc_value].get(fail, 0) for fail in all_fail_counts]
+        bar_positions = np.arange(len(all_fail_counts)) + i * width
+        ax.bar(bar_positions, completion_rates, width=width, label=f'{pc_value}pcEvilSec')
+    
+    ax.set_xlabel('Failure Count')
+    ax.set_ylabel('Average Completion Rate (%) - Yes')
+    ax.set_title('Combined Average Completion Rates')
+    ax.set_xticks(np.arange(len(all_fail_counts)) + width * (n - 1) / 2)
+    ax.set_xticklabels([f'{fail}Fail' if fail != 0 else 'Baseline' for fail in all_fail_counts])
+    ax.legend()
+    
+    plt.show()
+
+plot_combined_completion_rates(data_rate_yes)
+
+# Read filenames and extract data
+for filename in os.listdir(results_dir):
+    match = filename_re.match(filename)
+    if match:
+        pc_value = int(match.group(1))
+        fail_count = int(match.group(3)) if match.group(2) != 'False' else 0
+        avg_completion_time, perc_yes, perc_no = parse_file(os.path.join(results_dir, filename))
+        
+        if pc_value not in data_time:
+            data_time[pc_value] = {}
+            data_rate_yes[pc_value] = {}
+            data_rate_no[pc_value] = {}
+        data_time[pc_value][fail_count] = avg_completion_time
+        data_rate_yes[pc_value][fail_count] = perc_yes
+        data_rate_no[pc_value][fail_count] = perc_no
+
+# Sort the data by pc_value
 sorted_data_time = sorted(data_time.items())
 sorted_data_rate_yes = sorted(data_rate_yes.items())
 sorted_data_rate_no = sorted(data_rate_no.items())
