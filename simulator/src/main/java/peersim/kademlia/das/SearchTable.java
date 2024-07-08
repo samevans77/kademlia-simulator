@@ -21,20 +21,7 @@ public class SearchTable {
 
   // Used to send known nodes to other peers
   private HashMap<BigInteger, Neighbour> neighbours;
-
-  private HashMap<BigInteger, Set<BigInteger>> knownParents;
-
-  // private HashMap<BigInteger, Integer> ratedList;
-  private HashMap<BigInteger, RatedNode> ratedList;
-  private HashMap<Integer, Set<BigInteger>> ratedListParentalStrcuture;
-  private static Integer maxParentDepth = KademliaCommonConfigDas.MAX_PARENT_DEPTH;
-
   private static Double initialRating = KademliaCommonConfigDas.INITIAL_RATING;
-
-  private static int maxNodesOnOneLevel = KademliaCommonConfigDas.MAX_NODES_RETURNED;
-
-  // Used to identify the "parent" of any individual "child" added to the searchtable
-  private HashMap<BigInteger, List<BigInteger>> parents;
 
   // Used for local sampling
   private TreeSet<BigInteger> nodesIndexed;
@@ -58,10 +45,6 @@ public class SearchTable {
     this.nonValidatorsIndexed = new TreeSet<>();
     this.blackList = new HashSet<>();
     this.neighbours = new HashMap<>();
-    this.parents = new HashMap<>();
-    this.ratedList = new HashMap<>();
-    this.knownParents = new HashMap<>();
-    this.ratedListParentalStrcuture = new HashMap<>();
     this.allRatedMembers = new HashMap<>();
 
     RatedListMember root = new RatedListMember(BigInteger.valueOf(-1), -1, initialRating);
@@ -92,21 +75,15 @@ public class SearchTable {
     } else {
       // If not allowed to add a new null parent.
       if (!allRatedMembers.containsKey(parentID)) {
-        // System.out.println(
-        // "AllRatedMembers does not contain the parent attempting to be added: " + parentID);
-        // System.out.println("Adding to the lowest Level");
         parentID = BigInteger.valueOf(-1);
       }
       if (!addNewChild(neigh.getId(), parentID)) {
-        // System.out.println("Failed to add a new child.");
         allowNewNeighbour = false;
       } else {
         allowNewNeighbour = true;
       }
     }
 
-    // ratedList.putIfAbsent(neigh.getId(), new RatedNode(neigh.getId(), initialRating));
-    // logger.warning("Adding parent to " + neigh.getId() + " parentID: " + parentID);
     if (allowNewNeighbour) {
       if (neigh.getId().compareTo(builderAddress) != 0) {
         if (neighbours.get(neigh.getId()) == null) {
@@ -131,7 +108,6 @@ public class SearchTable {
         if (!blackList.contains(id)
             && !validatorsIndexed.contains(id)
             && !builderAddress.equals(id)) {
-          ratedList.putIfAbsent(id, new RatedNode(id, initialRating));
           nonValidatorsIndexed.add(id);
         }
       }
@@ -153,7 +129,6 @@ public class SearchTable {
     for (BigInteger id : nodes) {
       if (!blackList.contains(id) && id.compareTo(builderAddress) != 0) {
         validatorsIndexed.add(id);
-        ratedList.putIfAbsent(id, new RatedNode(id, initialRating));
       }
     }
   }
@@ -334,6 +309,13 @@ public class SearchTable {
     for (Neighbour n : toRemove) neighbours.remove(n.getId());
   }
 
+  /**
+   * When a "parent" returns a "child" i.e. a known peer, this is called
+   *
+   * @param childID the nodeID of the returned peer
+   * @param parentID the nodeID of the node who returned the peer
+   * @return True if the child successfully is added, false otherwise.
+   */
   public Boolean addNewChild(BigInteger childID, BigInteger parentID) {
     RatedListMember child;
     RatedListMember parent = allRatedMembers.get(parentID);
@@ -359,68 +341,12 @@ public class SearchTable {
     return false;
   }
 
-  // /**
-  //  * Get all of a nodes parents up to a certain depth
-  //  *
-  //  * @param targetID The node whose ancestors need to be found
-  //  * @param maxDepth The depth to which the search should be performed, set to -1 for unlimited
-  //  *     depth
-  //  * @return An Set of all parents up to a certain depth of the targetID with no duplicates.
-  //  */
-  // public Set<BigInteger> getParents(BigInteger targetID, int maxDepth) {
-
-  //   // Heuristic for known parents per list.
-  //   if (knownParents.containsKey(targetID)) {
-  //     return knownParents.get(targetID);
-  //   }
-
-  //   // Create a set to avoid duplicate values
-  //   Set<BigInteger> allParents = new HashSet<>();
-
-  //   // Recursive function, on the targetID with maxdepth value as given in an argument.
-  //   findAllParents(targetID, allParents, 0, maxDepth);
-
-  //   // Return a list of the set
-  //   knownParents.put(targetID, allParents);
-  //   return allParents;
-  // }
-
-  // // Recursive helper procedure to find all ancestors to a certain given depth.
-  // private void findAllParents(
-  //     BigInteger targetID, Set<BigInteger> allParents, int currentDepth, int maxDepth) {
-
-  //   // If the depth of parent search is met or exceeded, then stop. Ignore if maxDepth is -1
-  //   if (maxDepth != -1) if (currentDepth >= maxDepth) return;
-
-  //   // Collect current direct parents from this node
-  //   List<BigInteger> directParents = parents.get(targetID);
-
-  //   // if (directParents != null)
-  //   //  System.out.println("Number of direct parents:" + directParents.size());
-
-  //   // As long as the parents aren't nothing, enumerate them and if we haven't seen them before,
-  // get
-  //   // their parents (up to the given depth)
-  //   if (directParents != null) {
-  //     for (BigInteger parent : directParents) {
-  //       if (allParents.add(parent)) {
-  //         findAllParents(parent, allParents, currentDepth + 1, maxDepth);
-  //       }
-  //     }
-  //   }
-  // }
-
   /**
    * Called when the node passed in argument fails to respond to a sample request
    *
    * @param failedNode The node ID of the node which failed to respond
    */
   public void failedSample(BigInteger failedNode) {
-    // if (!ratedList.containsKey(failedNode)) {
-    //   System.out.println("failedSample: Creating new RatedNode");
-    //   ratedList.put(failedNode, new RatedNode(failedNode, initialRating));
-    // }
-
     if (!allRatedMembers.containsKey(failedNode)) {
       System.out.println("Tried to get node which doesn't exist. Adding to the bottom level");
       addNewChild(failedNode, BigInteger.valueOf(-1));
@@ -433,7 +359,6 @@ public class SearchTable {
     for (RatedListMember parent : parents) {
       parent.failedSample();
     }
-    // checkNodesToPurge();
   }
 
   /**
@@ -458,47 +383,13 @@ public class SearchTable {
     }
   }
 
-  // Potentially bad algorithm, returns a rated node no matter what - creating a new one if one of
-  // the same ID doesn't already exist.
-  public RatedNode getRatedNode(BigInteger nodeID) {
-    if (!ratedList.containsKey(nodeID)) {
-      System.out.println("getRatedNode: Creating new RatedNode");
-      ratedList.put(nodeID, new RatedNode(nodeID, initialRating));
-    }
-    return ratedList.get(nodeID);
-  }
-
+  // Returns a RatedList member no matter what - creating a new one of
+  // the same ID if it doesn't already exist
   public RatedListMember getRatedListMember(BigInteger nodeID) {
     if (!allRatedMembers.containsKey(nodeID)) {
       System.out.println("Tried to get node which doesn't exist. Adding to the bottom level");
       addNewChild(nodeID, BigInteger.valueOf(-1));
     }
     return allRatedMembers.get(nodeID);
-  }
-
-  // public void checkNodesToPurge() {
-  //   // First get all neighbours
-  //   Neighbour[] neighbourlist = getNeighbours();
-  //   for (Neighbour n : neighbourlist) {
-
-  //     // Then for each neighbour, look at their parents
-  //     Set<BigInteger> parents = getParents(n.getId(), maxParentDepth);
-  //     Boolean remove = true;
-
-  //     // For each parent, check if any are not defunct, if they are then don't remove the node
-  //     // This also removes the node if it has no parents
-  //     for (BigInteger parent : parents) {
-  //       if (!getRatedNode(parent).isDefunct()) remove = false;
-  //     }
-
-  //     if (remove) {
-  //       getRatedNode(n.getId()).setDefunct();
-  //       removeNode(n.getId());
-  //     }
-  //   }
-  // }
-
-  public void clearKnownParents() {
-    knownParents = new HashMap<>();
   }
 }

@@ -139,18 +139,12 @@ public abstract class SamplingOperation extends FindOperation {
     if (securityActive) {
       // Clearing the known parents list.
       knownParents = new HashMap<>();
-      // System.out.println("Calculating nodesByDiversity for " + nodes.values().size() + "
-      // nodes.");
-      // List<NodeDiversity> nodesByDiversity = orderByDiversity(nodes.values(), searchTable);
-      System.out.println("Calculating nodesByRating...");
       List<NodeRating> nodesByRating = orderByRating(nodes.values(), searchTable);
-      // List<NodeRating> nodesByRating = orderByRating(nodes.values(), searchTable);
 
+      // This currently exists in place of the combineLists function (as commented below)
       for (NodeRating nr : nodesByRating) {
         nodeList.add(nr.node);
       }
-      // System.out.println("LENGTH OF DIVERSITY LIST: " + nodesByDiversity.size());
-      // System.out.println("LENGTH OF RATING LIST: " + nodesByRating.size());
       // nodeList = combineLists(nodesByDiversity, nodesByRating, DIVERSITY_WEIGHT, RATING_WEIGHT);
     } else {
       nodeList = new ArrayList<>(nodes.values());
@@ -177,6 +171,14 @@ public abstract class SamplingOperation extends FindOperation {
     return result.toArray(new BigInteger[0]);
   }
 
+  /**
+   * Orders a set of nodes by the diversity of their parents using the Jaccard Coefficient.
+   *
+   * @param nodeCollection The nodes.values() list
+   * @param searchTable The current node's searchtable instance, used to get parental data
+   * @return A list of NodeDiversity objects, each of which contain the Node itself and a diversity
+   *     score.
+   */
   public List<NodeDiversity> orderByDiversity(
       Collection<Node> nodeCollection, SearchTable searchTable) {
     List<Node> nodes = new ArrayList<>(nodeCollection);
@@ -189,6 +191,7 @@ public abstract class SamplingOperation extends FindOperation {
     return nodeDiversities;
   }
 
+  // Helper function for orderByDiversity
   private double calculateDiversity(Node candidate, List<Node> nodes, SearchTable searchTable) {
     Set<RatedListMember> candidateAncestors = getNodeParents(candidate.getId(), searchTable);
     double diversityScore = 0;
@@ -209,16 +212,21 @@ public abstract class SamplingOperation extends FindOperation {
     // return diversityScore // Could just be like this instead if we wanted highest absolute score
   }
 
+  // Heuristic function, ensures that no parental search needs to happen more than once per
+  // samplingOperation.
   private Set<RatedListMember> getNodeParents(BigInteger nodeID, SearchTable searchTable) {
     if (!knownParents.containsKey(nodeID))
       knownParents.put(nodeID, searchTable.getRatedListMember(nodeID).getAllParents());
     return knownParents.get(nodeID);
   }
 
-  private void clearKnownParents() {
-    knownParents = new HashMap<>();
-  }
-
+  /**
+   * Calculate the Jaccard coefficient complement for the dissimilarity of the two sets
+   *
+   * @param set1 First set to be compared
+   * @param set2 Second set to be compared
+   * @return The Jaccard coefficient i.e. 1 - Jaccard similarity.
+   */
   private double jaccardDistance(Set<RatedListMember> set1, Set<RatedListMember> set2) {
     Set<RatedListMember> intersection = new HashSet<>(set1);
     intersection.retainAll(set2);
@@ -226,13 +234,10 @@ public abstract class SamplingOperation extends FindOperation {
     Set<RatedListMember> union = new HashSet<>(set1);
     union.addAll(set2);
 
-    return 1.0
-        - ((double) intersection.size()
-            / union
-                .size()); // Jaccard coefficient complement (1 - Js) (we want the dissimilarity of
-    // the two sets, not the similarity)
+    return 1.0 - ((double) intersection.size() / union.size());
   }
 
+  // Helper class for orderByDiversity
   private static class NodeDiversity {
     Node node;
     double diversityScore;
@@ -243,6 +248,13 @@ public abstract class SamplingOperation extends FindOperation {
     }
   }
 
+  /**
+   * Orders inputted nodes by the searchTable's known rating of them.
+   *
+   * @param nodeCollection A collection of nodes to be ordered
+   * @param searchTable The ordering node's searchtable
+   * @return The list of nodes as NodeRating objects with the node itself and a rating value.
+   */
   public List<NodeRating> orderByRating(Collection<Node> nodeCollection, SearchTable searchTable) {
     List<Node> nodes = new ArrayList<>(nodeCollection);
     List<NodeRating> nodesByRating = new ArrayList<>();
@@ -256,6 +268,7 @@ public abstract class SamplingOperation extends FindOperation {
     return nodesByRating;
   }
 
+  // Helper class for orderByRating
   private static class NodeRating {
     Node node;
     Double rating;
@@ -270,6 +283,15 @@ public abstract class SamplingOperation extends FindOperation {
     }
   }
 
+  /**
+   * Unusued currentlty. Used to combine the diversity and rating-ordered lists.
+   *
+   * @param nodesByDiversity List of NodeDiversity nodes
+   * @param nodesByRating List of NodeRating nodes
+   * @param diversityWeight The weight for which the diversity should be considered (0.5 defualt)
+   * @param ratingWeight The weight for which the rating should be considered (0.5 default)
+   * @return A list in order of nodes that should be queried.
+   */
   public static List<Node> combineLists(
       List<NodeDiversity> nodesByDiversity,
       List<NodeRating> nodesByRating,

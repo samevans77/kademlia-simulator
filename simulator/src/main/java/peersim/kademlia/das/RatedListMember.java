@@ -6,9 +6,14 @@ import java.util.LinkedList;
 import java.util.Queue;
 import java.util.Set;
 
+// Helper class for the ratedList
 public class RatedListMember {
 
+  // The maximum number of children one node can have. Also the maximum number of nodes that can be
+  // returned from one sampling operation
   public static int maxNodesOnOneLevel = KademliaCommonConfigDas.MAX_NODES_RETURNED;
+
+  // The maximum number of layers that can be in the ratedList
   public static int maxLevel = KademliaCommonConfigDas.MAX_RATED_LEVEL;
 
   public Set<RatedListMember> parents;
@@ -17,11 +22,18 @@ public class RatedListMember {
   public Integer level;
   public Integer rating;
 
+  // The change in rating from a successful sampling operaiton
   private static Double successfulSampleChange =
       KademliaCommonConfigDas.RATED_SUCCESSFUL_SAMPLE_CHANGE;
   private Double failedSampleChange;
+
+  // The maximum possible rating
   private static Double maxRating = KademliaCommonConfigDas.MAX_RATING;
+
+  // The maximum number of tolerated consecutive failures
   private static int maxAcceptedFailures = KademliaCommonConfigDas.MAX_ACCEPTED_FAILURES;
+
+  // The base for the exponential rating decrease
   private static int base = 3;
   private NodeStatus activity;
   private Double ratedScore;
@@ -164,6 +176,7 @@ public class RatedListMember {
     return F0;
   }
 
+  // Function if a sample is successful
   public void successfulSample() {
     ratedScore += successfulSampleChange;
     if (ratedScore > maxRating) {
