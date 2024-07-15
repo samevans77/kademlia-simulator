@@ -1,5 +1,7 @@
 # Kademlia Simulator
 
+Extension to the simulator created by datahop to include an implementation of the Rated List security mechanism. Created as a thesis as part of the University of Amsterdam's Security and Network Engineering MSc. 
+
 ## Overview
  
 This is a Kademlia Simulator that was used in the research project for the new Service Discovery in Ethereum 2.0 (Discv5) (available at: https://github.com/datahop/p2p-service-discovery). The simulator is built on top of [PeerSim](http://peersim.sourceforge.net/) and it is based on the Kademlia implementation from Daniele Furlan and Maurizio Bonani that can be found [here](http://peersim.sourceforge.net/code/kademlia.zip).
