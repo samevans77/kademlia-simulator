@@ -1,6 +1,6 @@
 # Kademlia Simulator
 
-Extension to the simulator created by datahop to include an implementation of the Rated List security mechanism. Created as a thesis as part of the University of Amsterdam's Security and Network Engineering MSc. 
+Extension to the simulator created by datahop to include an implementation of the Rated List security mechanism. Created as a thesis as part of the University of Amsterdam's Security and Network Engineering MSc. You can see my thesis by reading ```RP2_SAM_EVANS.pdf```
 
 ## Overview
  
